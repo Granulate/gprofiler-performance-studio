@@ -1,0 +1,50 @@
+# INTEL CONFIDENTIAL
+# Copyright (C) 2023 Intel Corporation
+# This software and the related documents are Intel copyrighted materials, and your use of them is governed by the express license under which they were provided to you ("License"). Unless the License provides otherwise, you may not use, modify, copy, publish, distribute, disclose or transmit this software or the related documents without Intel's prior written permission.
+# This software and the related documents are provided as is, with no express or implied warranties, other than those that are expressly stated in the License.
+
+name: gProfiler Backend CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    paths:
+      - 'src/gprofiler-dev/**'
+      - 'src/gprofiler/*.py'
+      - 'src/gprofiler/backend/**'
+      - 'src/gprofiler_logging/**'
+      - '.github/workflows/backend-ci.yml'
+
+  # Allows you to run this workflow manually from the Actions tab
+  # Again, empty, means yes (think of bool TRUE)
+  workflow_dispatch:
+
+jobs:
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.10' # Version range or exact version of a Python version to use, using SemVer's version range syntax
+          architecture: 'x64' # optional x64 or x86. Defaults to x64 if not specified
+
+      - uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/*requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dev dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r dev-requirements.txt
+
+      - name: Run linters
+        run: ./lint.sh --ci

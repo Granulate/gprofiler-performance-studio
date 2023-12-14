@@ -1,0 +1,121 @@
+// INTEL CONFIDENTIAL
+// Copyright (C) 2023 Intel Corporation
+// This software and the related documents are Intel copyrighted materials, and your use of them is governed by the express license under which they were provided to you ("License"). Unless the License provides otherwise, you may not use, modify, copy, publish, distribute, disclose or transmit this software or the related documents without Intel's prior written permission.
+// This software and the related documents are provided as is, with no express or implied warranties, other than those that are expressly stated in the License.
+
+package main
+
+import (
+	"context"
+	"encoding/json"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/sqs"
+	"io/ioutil"
+	"path/filepath"
+	"sync"
+)
+
+type SQSMessage struct {
+	Filename      string `json:"filename"`
+	Service       string `json:"service"`
+	ServiceId     int    `json:"service_id"`
+	MessageHandle string
+	QueueURL      string
+}
+
+func getQueueURL(sess *session.Session, queue string) (*sqs.GetQueueUrlOutput, error) {
+	svc := sqs.New(sess)
+
+	urlResult, err := svc.GetQueueUrl(&sqs.GetQueueUrlInput{
+		QueueName: &queue,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return urlResult, nil
+}
+
+func ListenSqs(ctx context.Context, args *CLIArgs, ch chan<- SQSMessage, wg *sync.WaitGroup) {
+	defer wg.Done()
+	sessionOptions := session.Options{
+		SharedConfigState: session.SharedConfigEnable,
+	}
+	if args.AWSEndpoint != "" {
+		sessionOptions.Config = aws.Config{
+			Region:   aws.String(args.AWSRegion),
+			Endpoint: aws.String(args.AWSEndpoint),
+		}
+	}
+	sess := session.Must(session.NewSessionWithOptions(sessionOptions))
+	svc := sqs.New(sess)
+	urlResult, err := getQueueURL(sess, args.SQSQueue)
+
+	if err != nil {
+		logger.Errorf("Got an error getting the queue URL: %v", err)
+		return
+	}
+
+	for {
+		select {
+		case <-ctx.Done():
+			logger.Debug("ListenSQS finished")
+			return
+		default:
+			output, recvErr := svc.ReceiveMessage(&sqs.ReceiveMessageInput{
+				QueueUrl:            urlResult.QueueUrl,
+				MaxNumberOfMessages: aws.Int64(1),
+				WaitTimeSeconds:     aws.Int64(10),
+			})
+			if recvErr != nil {
+				logger.Error(recvErr)
+				continue
+			}
+
+			for _, message := range output.Messages {
+				var sqsMessage SQSMessage
+				parseErr := json.Unmarshal([]byte(*message.Body), &sqsMessage)
+				if parseErr != nil {
+					logger.Errorf("Error while parsing %v", parseErr)
+					continue
+				}
+				sqsMessage.QueueURL = *urlResult.QueueUrl
+				sqsMessage.MessageHandle = *message.ReceiptHandle
+				ch <- sqsMessage
+			}
+		}
+	}
+}
+
+func deleteMessage(sess *session.Session, queueURL string, messageHandle string) error {
+	svc := sqs.New(sess)
+
+	_, err := svc.DeleteMessage(&sqs.DeleteMessageInput{
+		QueueUrl:      &queueURL,
+		ReceiptHandle: &messageHandle,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func ProcessFolder(ctx context.Context, ch chan<- SQSMessage, inputFolder string, wg *sync.WaitGroup) {
+	defer wg.Done()
+	files, err := ioutil.ReadDir(inputFolder)
+	if err != nil {
+		logger.Errorf("unable to open directory %s, err: %v", inputFolder, err)
+		return
+	}
+	for _, file := range files {
+		message := SQSMessage{
+			Filename:      filepath.Join(inputFolder, file.Name()),
+			ServiceId:     1,
+			QueueURL:      "",
+			MessageHandle: "",
+		}
+		ch <- message
+	}
+}

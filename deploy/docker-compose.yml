@@ -1,0 +1,175 @@
+# INTEL CONFIDENTIAL
+# Copyright (C) 2023 Intel Corporation
+# This software and the related documents are Intel copyrighted materials, and your use of them is governed by the express license under which they were provided to you ("License"). Unless the License provides otherwise, you may not use, modify, copy, publish, distribute, disclose or transmit this software or the related documents without Intel's prior written permission.
+# This software and the related documents are provided as is, with no express or implied warranties, other than those that are expressly stated in the License.
+
+version: "3.6"
+services:
+  # ---
+  db_clickhouse:
+    image: clickhouse/clickhouse-server:22.8
+    container_name: gprofiler-ps-clickhouse
+    restart: always
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+# for debug
+#    ports:
+#     - "8123:8123"
+#     - "9000:9000"
+#     - "9009:9009"
+    environment:
+     - CLICKHOUSE_USER=$CLICKHOUSE_USER
+     - CLICKHOUSE_PASSWORD=$CLICKHOUSE_PASSWORD
+    volumes:
+     - ../src/gprofiler_indexer/sql/create_ch_schema.sql:/docker-entrypoint-initdb.d/create_schema.sql
+     - logs:/var/log/clickhouse-server/
+     - db_clickhouse:/var/lib/clickhouse/
+
+  # ---
+  db_postgres:
+    image: postgres:15.1
+    container_name: gprofiler-ps-postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=$POSTGRES_USER
+      - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+      - POSTGRES_DB=$POSTGRES_DB
+# for debug
+#    ports:
+#      - "54321:5432"
+    volumes:
+      - db_postgres:/var/lib/postgresql/data
+      - ../scripts/setup/postgres/gprofiler_recreate.sql:/docker-entrypoint-initdb.d/create_scheme.sql
+
+  # ---
+  webapp:
+    build:
+      context: ../src
+      dockerfile: gprofiler/Dockerfile
+      args:
+        GIT_SSH_KEY_FOR_GRANULATE_PRIVATE_REPOS: key_for_granulate_private_repos
+    container_name: gprofiler-ps-webapp
+    restart: always
+    environment:
+      - BUCKET_NAME=${BUCKET_NAME}
+      - QUERY_API_BASE_URL=http://ch-rest-service:8080
+      - SQS_INDEXER_QUEUE_URL=$SQS_INDEXER_QUEUE_URL
+      - GPROFILER_POSTGRES_DB_NAME=$POSTGRES_DB
+      - GPROFILER_POSTGRES_PORT=$POSTGRES_PORT
+      - GPROFILER_POSTGRES_HOST=$POSTGRES_HOST
+      - GPROFILER_POSTGRES_USERNAME=$POSTGRES_USER
+      - GPROFILER_POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+      - APP_LOG_FILE_PATH=$WEBAPP_APP_LOG_FILE_PATH
+      - APP_LOG_LEVEL=INFO
+      - AWS_METADATA_SERVICE_NUM_ATTEMPTS=100
+      - REDIRECT_DOMAIN=$DOMAIN
+      - SQS_ENDPOINT_URL=https://sqs.${AWS_REGION}.amazonaws.com
+      - AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+      - AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN
+# for debug
+#    ports:
+#      - "8888:80"
+    volumes:
+      - "logs:${COMMON_LOGS_DIR}"
+
+  # ---
+  ch-rest-service:
+    build:
+      context: ../src/gprofiler_flamedb_rest
+      dockerfile: Dockerfile
+    container_name: gprofiler-ps-ch-rest-service
+    restart: always
+    environment:
+      - CLICKHOUSE_ADDR=${CLICKHOUSE_HOST}:9000?username=${CLICKHOUSE_USER}&password=${CLICKHOUSE_PASSWORD}
+      - CLICKHOUSE_STACKS_TABLE=flamedb.samples
+      - CLICKHOUSE_METRICS_TABLE=flamedb.metrics
+      - AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+      - AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN
+    depends_on:
+      - db_clickhouse
+
+  # ---
+  agents-logs-backend:
+    build:
+      context: ../src
+      dockerfile: gprofiler_logging/Dockerfile
+    container_name: gprofiler-ps-agents-logs-backend
+    restart: always
+    environment:
+      - APP_LOG_FILE_PATH=$AGENTS_LOGS_APP_LOG_FILE_PATH
+      - ENV=open
+      - LOG_FILE_PATH=$AGENTS_LOGS_LOG_FILE_PATH
+      - GPROFILER_POSTGRES_DB_NAME=$POSTGRES_DB
+      - GPROFILER_POSTGRES_PORT=$POSTGRES_PORT
+      - GPROFILER_POSTGRES_HOST=$POSTGRES_HOST
+      - GPROFILER_POSTGRES_USERNAME=$POSTGRES_USER
+      - GPROFILER_POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+    volumes:
+      - "logs:${COMMON_LOGS_DIR}"
+
+  # ---
+  periodic-tasks:
+    build:
+      context: periodic_tasks
+      dockerfile: Dockerfile
+    container_name: gprofiler-ps-periodic-tasks
+    restart: always
+    environment:
+      - PGHOST=$POSTGRES_HOST
+      - PGPORT=$POSTGRES_PORT
+      - PGUSER=$POSTGRES_USER
+      - PGPASSWORD=$POSTGRES_PASSWORD
+      - PGDATABASE=$POSTGRES_DB
+      - LOGROTATE_PATTERN=${COMMON_LOGS_DIR}/*.log
+      - LOGROTATE_SIZE=15M
+    volumes:
+      - "logs:${COMMON_LOGS_DIR}"
+
+  # ---
+  ch-indexer:
+    build:
+      context: ../src/gprofiler_indexer
+      dockerfile: Dockerfile
+    container_name: gprofiler-ps-ch-indexer
+    restart: always
+    environment:
+      - SQS_QUEUE_URL=$SQS_INDEXER_QUEUE_URL
+      - AWS_REGION=$AWS_REGION
+      - S3_BUCKET=$BUCKET_NAME
+      - CLICKHOUSE_ADDR=$CLICKHOUSE_HOST:9000
+      - CLICKHOUSE_USER=${CLICKHOUSE_USER}
+      - CLICKHOUSE_USE_TLS=false
+      - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD}
+      - CONCURRENCY=8
+      - CLICKHOUSE_STACKS_TABLE=flamedb.samples
+      - CLICKHOUSE_METRICS_TABLE=flamedb.metrics
+      - CLICKHOUSE_STACKS_BATCH_SIZE=100000
+      - CLICKHOUSE_METRICS_BATCH_SIZE=1000
+      - CACHE_SIZE=2048
+      - AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+      - AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN
+  #---
+  nginx-load-balancer:
+    image: nginx:1.23.3
+    container_name: gprofiler-ps-nginx-load-balancer
+    restart: always
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "8888:80"
+    depends_on:
+      - agents-logs-backend
+      - webapp
+
+volumes:
+  db_clickhouse:
+    driver: local
+  db_postgres:
+    driver: local
+  logs:
+    driver: local

@@ -1,0 +1,312 @@
+# INTEL CONFIDENTIAL
+# Copyright (C) 2023 Intel Corporation
+# This software and the related documents are Intel copyrighted materials, and your use of them is governed by the express license under which they were provided to you ("License"). Unless the License provides otherwise, you may not use, modify, copy, publish, distribute, disclose or transmit this software or the related documents without Intel's prior written permission.
+# This software and the related documents are provided as is, with no express or implied warranties, other than those that are expressly stated in the License.
+
+# CallStack(s) squash/merge rules
+# To verify this yaml, please use: go run main.go --verify
+# Tests are mandatory, at least one test should be written for rule
+# Rules are applied in order as described in this file, the first rule that matches is applied
+rules:
+
+  - rule:
+    regexp: "GeneratedMethodAccessor_?([0-9]+|RN[0-9A-F]+)"
+    replace: "GeneratedMethodAccessor[m]"
+    tests:
+      - test:
+        input: "GeneratedMethodAccessor0"
+        output: "GeneratedMethodAccessor[m]"
+      - test:
+        input: "jdk/internal/reflect/GeneratedMethodAccessor_RNDCA71404.invoke(Ljava/lang/Object|[Ljava/lang/Object|)Ljava/lang/Object|"
+        output: "jdk/internal/reflect/GeneratedMethodAccessor[m].invoke(Ljava/lang/Object|[Ljava/lang/Object|)Ljava/lang/Object|"
+
+  - rule:
+    regexp: "GeneratedConstructorAccessor_?([0-9]+|RN[0-9A-F]+)"
+    replace: "GeneratedConstructorAccessor[m]"
+    tests:
+      - test:
+        input: "jdk/internal/reflect/GeneratedConstructorAccessor1205.newInstance([Ljava/lang/Object|)Ljava/lang/Object|"
+        output: "jdk/internal/reflect/GeneratedConstructorAccessor[m].newInstance([Ljava/lang/Object|)Ljava/lang/Object|"
+
+  - rule:
+    regexp: "GeneratedClass\\$SpecificUnsafeProjection.writeFields_[0-9]+_[0-9]+\\$"
+    replace: "GeneratedClass$SpecificUnsafeProjection.writeFields_[m]_[m]$"
+    tests:
+      - test:
+        input: "GeneratedClass$SpecificUnsafeProjection.writeFields_10_10$"
+        output: "GeneratedClass$SpecificUnsafeProjection.writeFields_[m]_[m]$"
+
+  - rule:
+    regexp: "GeneratedIteratorForCodegenStage[0-9]+"
+    replace: "GeneratedIteratorForCodegenStage[m]"
+    tests:
+      - test:
+        input: "GeneratedIteratorForCodegenStage111"
+        output: "GeneratedIteratorForCodegenStage[m]"
+
+  - rule:
+    regexp: "Lambda\\$[0-9]+[./](0x){0,1}[0-9a-f]+"
+    replace: "Lambda$[m]/[m]"
+    tests:
+      - test:
+        input: "Lambda$512/0x123a"
+        output: "Lambda$[m]/[m]"
+      - test:
+        input: "Lambda$512/123"
+        output: "Lambda$[m]/[m]"
+
+  - rule:
+    regexp: "Lambda\\$[0-9]+/[0-9]+"
+    replace: "Lambda$[m]/[m]"
+    tests:
+      - test:
+        input: "Lambda$123/123"
+        output: "Lambda$[m]/[m]"
+
+  - rule:
+    regexp: "Lambda[0-9]+/[0-9]+"
+    replace: "Lambda[m]/[m]"
+    tests:
+      - test:
+        input: "Lambda123/123"
+        output: "Lambda[m]/[m]"
+
+  - rule:
+    regexp: "LambdaForm\\$[A-Z]+/[0-9]+"
+    replace: "LambdaForm$[m]/[m]"
+    tests:
+      - test:
+        input: "LambdaForm$TEST/123"
+        output: "LambdaForm$[m]/[m]"
+
+  - rule:
+    regexp: "LambdaForm\\$[A-Z]+\\.0x[0-9a-f]+"
+    replace: "LambdaForm$[m].[m]"
+    tests:
+      - test:
+        input: "java/lang/invoke/LambdaForm$MH.0x000000080234cc00.invokeExact_MT"
+        output: "java/lang/invoke/LambdaForm$[m].[m].invokeExact_MT"
+
+  - rule:
+    regexp: "\\$[0-9]+\\.(0x)?[0-9a-f]{16}\\."
+    replace: "$[m]."
+    tests:
+      - test:
+        input: "java/util/stream/Collectors$$Lambda$add$2550156988.0x00000000000005f7.accept(Ljava/lang/Object|Ljava/lang/Object|)V"
+        output: "java/util/stream/Collectors$$Lambda$add$[m].accept(Ljava/lang/Object|Ljava/lang/Object|)V"
+      - test:
+        input: "$$Lambda$apply$1143756895.0x000000000000d35e.load(Ljava/lang/Object|)Ljava/lang/Object|"
+        output: "$$Lambda$apply$[m].load(Ljava/lang/Object|)Ljava/lang/Object|"
+
+  - rule:
+    regexp: "\\$[0-9]+\\+(0x)?[0-9a-f]{8,16}"
+    replace: "$[m]"
+    tests:
+      - test:
+        input: "$$Lambda$3629+0x0000000802293b30"
+        output: "$$Lambda$[m]"
+      - test:
+        input: "$$$Lambda$10560+0x0000000802ba8400"
+        output: "$$$Lambda$[m]"
+      - test:
+        input: "java.util.regex.Pattern$$Lambda$19+0x800000025"
+        output: "java.util.regex.Pattern$$Lambda$[m]"
+
+  - rule:
+    regexp: "/tmp/perf-[0-9]+\\.map"
+    replace: "/tmp/perf-[m].map"
+    tests:
+      - test:
+        input: "/tmp/perf-123.map"
+        output: "/tmp/perf-[m].map"
+
+  - rule:
+    regexp: "GeneratedClass\\$SpecificPredicate\\$NestedClass_[0-9]+.caseWhen_[0-9]+\
+    \\$\\(Lorg/apache/spark/sql/catalyst/expressions/GeneratedClass\\$SpecificPredicate\
+    \\$NestedClass_[0-9]+"
+    replace: "GeneratedClass$SpecificPredicate$NestedClass_[m].caseWhen_[m]\
+    $(Lorg/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificPredicate$NestedClass_[m]"
+    tests:
+      - test:
+        input: "org/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificPredicate$NestedClass_1234.\
+        caseWhen_2352$(Lorg/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificPredicate$NestedClass_1234\
+        |Lorg/apache/spark/sql/catalyst/InternalRow|)B"
+        output: "org/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificPredicate$NestedClass_[m].\
+        caseWhen_[m]$(Lorg/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificPredicate$NestedClass_[m]\
+        |Lorg/apache/spark/sql/catalyst/InternalRow|)B"
+
+  - rule:
+    regexp: "GeneratedClass\\$SpecificPredicate\\$NestedClass_[0-9]+.caseWhen_[0-9]+\
+	_[0-9]+\\$\\(Lorg/apache/spark/sql/catalyst/expressions/GeneratedClass\
+	\\$SpecificPredicate\\$NestedClass_[0-9]+"
+    replace: "GeneratedClass$SpecificPredicate$NestedClass_[m].caseWhen_[m]_[m]$\
+	(Lorg/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificPredicate$NestedClass_[m]"
+    tests:
+      - test:
+        input: "GeneratedClass$SpecificPredicate$NestedClass_123.caseWhen_123_123$\
+        (Lorg/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificPredicate$NestedClass_132"
+        output: "GeneratedClass$SpecificPredicate$NestedClass_[m].caseWhen_[m]_[m]$\
+        (Lorg/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificPredicate$NestedClass_[m]"
+
+
+  - rule:
+    regexp: "GeneratedClass\\$SpecificPredicate\\$NestedClass_[0-9]+.And_[0-9]+\\$\
+			\\(Lorg/apache/spark/sql/catalyst/expressions/GeneratedClass\\$SpecificPredicate\\$NestedClass_[0-9]+"
+    replace: "GeneratedClass$SpecificPredicate$NestedClass_[m].And_[m]$(Lorg/apache/spark/sql/catalyst/expressions\
+    /GeneratedClass$SpecificPredicate$NestedClass_[m]"
+    tests:
+      - test:
+        input: "GeneratedClass$SpecificPredicate$NestedClass_234.And_234$(Lorg/apache/spark/sql/catalyst/expressions\
+        /GeneratedClass$SpecificPredicate$NestedClass_123"
+        output: "GeneratedClass$SpecificPredicate$NestedClass_[m].And_[m]$(Lorg/apache/spark/sql/catalyst/expressions\
+        /GeneratedClass$SpecificPredicate$NestedClass_[m]"
+
+
+  - rule:
+    regexp: "GeneratedClass\\$SpecificUnsafeProjection\\$NestedClass_[0-9]+.caseWhen_[0-9]+_[0-9]+\\$\
+      \\(Lorg/apache/spark/sql/catalyst/expressions/GeneratedClass\\$SpecificUnsafeProjection\\$NestedClass_[0-9]+"
+    replace: "GeneratedClass$SpecificUnsafeProjection$NestedClass_[m].caseWhen_[m]_[m]$\
+    (Lorg/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificUnsafeProjection$NestedClass_[m]"
+    tests:
+      - test:
+        input: "GeneratedClass$SpecificUnsafeProjection$NestedClass_124.caseWhen_123_321$\
+        (Lorg/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificUnsafeProjection$NestedClass_256"
+        output: "GeneratedClass$SpecificUnsafeProjection$NestedClass_[m].caseWhen_[m]_[m]$\
+        (Lorg/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificUnsafeProjection$NestedClass_[m]"
+
+  - rule:
+    regexp: "GeneratedClass\\$SpecificUnsafeProjection\\$NestedClass_[0-9]+.caseWhen_[0-9]+\\$\
+      \\(Lorg/apache/spark/sql/catalyst/expressions/GeneratedClass\\$SpecificUnsafeProjection\\$NestedClass_[0-9]+"
+    replace: "GeneratedClass$SpecificUnsafeProjection$NestedClass_[m].caseWhen_[m]$\
+    (Lorg/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificUnsafeProjection$NestedClass_[m]"
+    tests:
+      - test:
+        input: "GeneratedClass$SpecificUnsafeProjection$NestedClass_124.caseWhen_123$\
+        (Lorg/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificUnsafeProjection$NestedClass_256"
+        output: "GeneratedClass$SpecificUnsafeProjection$NestedClass_[m].caseWhen_[m]$\
+        (Lorg/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificUnsafeProjection$NestedClass_[m]"
+
+  - rule:
+    regexp: "GeneratedClass\\$SpecificUnsafeProjection.And_[0-9]+\\$\
+    \\(Lorg/apache/spark/sql/catalyst/expressions/GeneratedClass\\$SpecificUnsafeProjection"
+    replace: "GeneratedClass$SpecificUnsafeProjection.And_[m]$(Lorg/apache/spark/sql/catalyst/expressions/\
+    GeneratedClass$SpecificUnsafeProjection"
+    tests:
+      - test:
+        input: "org/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificUnsafeProjection.And_343$\
+        (Lorg/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificUnsafeProjection|\
+        Lorg/apache/spark/sql/catalyst/InternalRow|)Z"
+        output: "org/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificUnsafeProjection.And_[m]$\
+        (Lorg/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificUnsafeProjection|\
+        Lorg/apache/spark/sql/catalyst/InternalRow|)Z"
+
+  - rule:
+    regexp: "GeneratedClass\\$SpecificUnsafeProjection\\$NestedClass_[0-9]+.And_[0-9]+\\$\
+    \\(Lorg/apache/spark/sql/catalyst/expressions/GeneratedClass\\$SpecificUnsafeProjection\\$NestedClass_[0-9]+"
+    replace: "GeneratedClass$SpecificUnsafeProjection$NestedClass_[m].And_[m]$\
+    (Lorg/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificUnsafeProjection$NestedClass_[m]"
+    tests:
+      - test:
+        input: "org/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificUnsafeProjection$NestedClass_2.\
+        And_1133$(Lorg/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificUnsafeProjection$\
+        NestedClass_2|Lorg/apache/spark/sql/catalyst/InternalRow|)Z"
+        output: "org/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificUnsafeProjection$NestedClass_[m].\
+        And_[m]$(Lorg/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificUnsafeProjection$\
+        NestedClass_[m]|Lorg/apache/spark/sql/catalyst/InternalRow|)Z"
+
+  - rule:
+    regexp: "GeneratedClass\\$SpecificPredicate.And_[0-9]+\\$\
+    \\(Lorg/apache/spark/sql/catalyst/expressions/GeneratedClass\\$SpecificPredicate"
+    replace: "GeneratedClass$SpecificPredicate.And_[m]$(Lorg/apache/spark/sql/catalyst/expressions/GeneratedClass$\
+    SpecificPredicate"
+    tests:
+      - test:
+        input: "org/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificPredicate.And_137$\
+        (Lorg/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificPredicate|\
+        Lorg/apache/spark/sql/catalyst/InternalRow|)Z"
+        output: "org/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificPredicate.And_[m]$\
+        (Lorg/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificPredicate|\
+        Lorg/apache/spark/sql/catalyst/InternalRow|)Z"
+
+  - rule:
+    regexp: "GeneratedClass\\$SpecificPredicate.caseWhen_[0-9]+_[0-9]+\\$"
+    replace: "GeneratedClass$SpecificPredicate.caseWhen_[m]_[m]$"
+    tests:
+      - test:
+        input: "org/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificPredicate.caseWhen_0_3$\
+        (Lorg/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificPredicate|\
+        Lorg/apache/spark/sql/catalyst/InternalRow|)B"
+        output: "org/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificPredicate.caseWhen_[m]_[m]$\
+        (Lorg/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificPredicate|\
+        Lorg/apache/spark/sql/catalyst/InternalRow|)B"
+
+  - rule:
+    regexp: "com/sun/proxy/\\$Proxy[0-9]+"
+    replace: "com/sun/proxy/$Proxy[m]"
+    tests:
+      - test:
+        input: "com/sun/proxy/$Proxy409.getString"
+        output: "com/sun/proxy/$Proxy[m].getString"
+
+  - rule:
+    regexp: "org/apache/spark/sql/catalyst/expressions/GeneratedClass\\$SpecificPredicate.createExternalRow_[0-9]+_[0-9]+"
+    replace: "org/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificPredicate.createExternalRow_[m]_[m]"
+    tests:
+      - test:
+        input: "org/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificPredicate.createExternalRow_3_15$(Lorg/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificPredicate|Lorg/apache/spark/sql/catalyst/InternalRow|[Ljava/lang/Object|)V"
+        output: "org/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificPredicate.createExternalRow_[m]_[m]$(Lorg/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificPredicate|Lorg/apache/spark/sql/catalyst/InternalRow|[Ljava/lang/Object|)V"
+      - test:
+        input: "org/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificPredicate.createExternalRow_3_6$(Lorg/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificPredicate|Lorg/apache/spark/sql/catalyst/InternalRow|[Ljava/lang/Object|)V"
+        output: "org/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificPredicate.createExternalRow_[m]_[m]$(Lorg/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificPredicate|Lorg/apache/spark/sql/catalyst/InternalRow|[Ljava/lang/Object|)V"
+
+  - rule:
+    regexp: "org/apache/spark/sql/catalyst/expressions/GeneratedClass\\$SpecificMutableProjection.subExpr_[0-9]+\\$"
+    replace: "org/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificMutableProjection.subExpr_[m]$"
+    tests:
+      - test:
+        input: "org/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificMutableProjection.subExpr_56$(Lorg/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificMutableProjection|Lorg/apache/spark/sql/catalyst/InternalRow|)V"
+        output: "org/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificMutableProjection.subExpr_[m]$(Lorg/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificMutableProjection|Lorg/apache/spark/sql/catalyst/InternalRow|)V"
+
+  - rule:
+    regexp: "org/apache/spark/sql/catalyst/expressions/GeneratedClass\\$SpecificMutableProjection.apply_[0-9]+_[0-9]+\\$"
+    replace: "org/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificMutableProjection.apply_[m]_[m]$"
+    tests:
+      - test:
+        input: "org/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificMutableProjection.apply_0_18$(Lorg/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificMutableProjection|Lorg/apache/spark/sql/catalyst/InternalRow|)V"
+        output: "org/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificMutableProjection.apply_[m]_[m]$(Lorg/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificMutableProjection|Lorg/apache/spark/sql/catalyst/InternalRow|)V"
+
+  - rule:
+    regexp: "/staticx-[a-zA-Z]{6}/"
+    replace: "/staticx-[m]/"
+    tests:
+      - test:
+        input: "/tmp/gprofiler/staticx-JhfMFG/liblzma.so.5.2.2"
+        output: "/tmp/gprofiler/staticx-[m]/liblzma.so.5.2.2"
+
+  - rule:
+    regexp: "org/apache/spark/sql/catalyst/expressions/GeneratedClass\\$SpecificOrdering.compare_[0-9]+_[0-9]+\\$"
+    replace: "org/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificOrdering.compare_[m]_[m]$"
+    tests:
+      - test:
+        input: "org/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificOrdering.compare_0_0$"
+        output: "org/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificOrdering.compare_[m]_[m]$"
+
+  - rule:
+    regexp: "org/apache/spark/sql/catalyst/expressions/GeneratedClass\\$SpecificSafeProjection.createExternalRow_[0-9]+_[0-9]+\\$"
+    replace: "org/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificSafeProjection.createExternalRow_[m]_[m]$"
+    tests:
+      - test:
+        input: "org/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificSafeProjection.createExternalRow_0_0$"
+        output: "org/apache/spark/sql/catalyst/expressions/GeneratedClass$SpecificSafeProjection.createExternalRow_[m]_[m]$"
+
+  # pyinstaller
+  - rule:
+    regexp: /_MEI[A-Za-z0-9]{6}/
+    replace: /_MEI[m]/
+    tests:
+      - test:
+        input: main (/tmp/gprofiler/_MEIVWrdWp/gprofiler/resources/perf)
+        output: main (/tmp/gprofiler/_MEI[m]/gprofiler/resources/perf)
+      - test:
+        input: perf_session__process_events (/tmp/gprofiler/_MEILGjhXB/gprofiler/resources/perf)
+        output: perf_session__process_events (/tmp/gprofiler/_MEI[m]/gprofiler/resources/perf)

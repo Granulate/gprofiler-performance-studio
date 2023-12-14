@@ -1,0 +1,9 @@
+GET http://localhost:8080/api/v1/flamegraph?
+    start_datetime=2023-01-25T00:00:00&
+    end_datetime=2023-01-26T06:00:00&
+    format=collapsed_file&
+    stacks_num=10000&
+    client=354&
+    service=647163&
+    metadata=full&
+    enrichment=lang

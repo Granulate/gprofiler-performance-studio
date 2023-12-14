@@ -1,0 +1,85 @@
+# INTEL CONFIDENTIAL
+# Copyright (C) 2023 Intel Corporation
+# This software and the related documents are Intel copyrighted materials, and your use of them is governed by the express license under which they were provided to you ("License"). Unless the License provides otherwise, you may not use, modify, copy, publish, distribute, disclose or transmit this software or the related documents without Intel's prior written permission.
+# This software and the related documents are provided as is, with no express or implied warranties, other than those that are expressly stated in the License.
+
+name: gProfiler Frontend CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    paths:
+      - "src/gprofiler/frontend/**"
+      - ".github/workflows/frontend-ci.yml"
+
+  workflow_dispatch:
+
+jobs:
+  # Jobs are running in parallel, saving time
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-20.04
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      - name: Get frontend source code HASH
+        run: |
+          export HASH=`git ls-files ./src/gprofiler/frontend/src ./src/gprofiler/frontend/yarn.lock | xargs md5sum | cut -d" " -f1 | md5sum | cut -d" " -f1`
+          echo "FRONTEND_SRC_HASH=$HASH" >> $GITHUB_ENV
+
+      - name: Use frontend build cache
+        uses: actions/cache@v2
+        id: frontend-build-cache
+        with:
+          path: "src/gprofiler/frontend/build"
+          key: ${{ runner.os }}-frontend-build--${{ env.FRONTEND_SRC_HASH }}
+
+      - name: Setup node
+        if: steps.frontend-build-cache.outputs.cache-hit != 'true'
+        uses: actions/setup-node@v2
+        with:
+          node-version: "16.15.1"
+
+      - name: Use Yarn cache
+        uses: actions/cache@v2
+        id: yarn-cache
+        with:
+          path: "**/node_modules"
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+
+      - name: Install dependencies
+        if: steps.yarn-cache.outcome != 'Skipped' && steps.yarn-cache.outputs.cache-hit != 'true' && steps.frontend-build-cache.outputs.cache-hit != 'true'
+        run: yarn install --prefer-offline --frozen-lockfile
+        working-directory: ./src/gprofiler/frontend
+
+      # FRONTEND: Make sure no unused vars, no syntax errors, etc
+      - name: ESLint frontend
+        if: steps.frontend-build-cache.outputs.cache-hit != 'true'
+        run: yarn eslint
+        working-directory: ./src/gprofiler/frontend
+
+      # FRONETND: Make sure code is styleguide compliant, think of newlines,
+      # indentation format, etc.
+      - name: Code styleguide
+        if: steps.frontend-build-cache.outputs.cache-hit != 'true'
+        run: yarn format-check
+        working-directory: ./src/gprofiler/frontend
+
+      # FRONTEND: 3rd party dependencies security vulnerability audit
+      - name: Security vulnerabilities audit
+        # Currently silenced until lodash release security fix
+        # but still running for logging
+        run: npx audit-ci --none -a lodash immer
+        working-directory: ./src/gprofiler/frontend
+
+      # FRONTEND: now let's try to build/compile our project
+      # and fail if there are any parsing/compiler level errors
+      - name: Build the app (parsing/compiling audit)
+        if: github.ref == 'refs/heads/master'
+        run: yarn build
+        working-directory: ./src/gprofiler/frontend
