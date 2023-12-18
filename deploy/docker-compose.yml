@@ -48,8 +48,6 @@ services:
     build:
       context: ../src
       dockerfile: gprofiler/Dockerfile
-      args:
-        GIT_SSH_KEY_FOR_GRANULATE_PRIVATE_REPOS: key_for_granulate_private_repos
     container_name: gprofiler-ps-webapp
     restart: always
     environment:
