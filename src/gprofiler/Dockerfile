@@ -2,8 +2,6 @@ FROM node:16.18 as frontend_dependencies
 
 ARG VITE_PRODUCTION_ENV
 ARG VITE_SERVER_HOST
-# TODO: remove this arg when replaced to public repo
-ARG GIT_SSH_KEY_FOR_GRANULATE_PRIVATE_REPOS
 
 ENV VITE_PRODUCTION_ENV=$VITE_PRODUCTION_ENV
 ENV VITE_SERVER_HOST=$VITE_SERVER_HOST
@@ -11,9 +9,7 @@ ENV VITE_SERVER_HOST=$VITE_SERVER_HOST
 WORKDIR /frontend
 COPY gprofiler/frontend/package.json /frontend/
 COPY gprofiler/frontend/yarn.lock /frontend/
-COPY gprofiler/frontend/scripts/* /frontend/scripts/
-RUN chmod +x /frontend/scripts/*.sh
-RUN GIT_SSH_KEY_FOR_GRANULATE_PRIVATE_REPOS=$GIT_SSH_KEY_FOR_GRANULATE_PRIVATE_REPOS yarn --cwd /frontend/ install
+RUN yarn --cwd /frontend/ install
 
 COPY gprofiler/frontend /frontend
 RUN yarn build
