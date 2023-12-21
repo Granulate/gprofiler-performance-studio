@@ -155,6 +155,21 @@ To copy logs to your host:
 docker cp gprofiler-ps-agents-logs-backend:/logs ./logs_from_container
 ```
 
+### Clustered clickhouse (advanced)
+To handle large amounts of data, you can use a clustered ClickHouse setup.
+
+Cluster mode schema is located in `src/gprofiler_indexer/sql/create_ch_schema_cluster_mode.sql` file.
+
+For setting up a ClickHouse cluster, you can choose from several methods.
+
+1. **Basic Cluster Deployment**: [ClickHouse Official Documentation](https://clickhouse.com/docs/en/engines/table-engines/special/distributed/)
+2. **Kubernetes Deployment**: [ClickHouse on Kubernetes](https://docs.altinity.com/altinity-clickhouse-operator/quick-start-guide/)
+3. **Cloud solutions**
+
+After setting up the cluster,
+you need to remove db_clickhouse service from the `deploy/docker-compose.yml` file
+and changing `CLICKHOUSE_HOST` in the `.env` file to the cluster address.
+
 
 ## Managing the stack
 ### Downsampling
