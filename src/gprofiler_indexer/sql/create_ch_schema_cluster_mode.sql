@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS flamedb.samples_local ON CLUSTER '{cluster}'
                                    '{replica}') PARTITION BY toYYYYMMDD(Timestamp)
     ORDER BY (ServiceId, InstanceType, ContainerEnvName, HostNameHash, ContainerNameHash, Timestamp);
 
--- ShardKey is CallStackHash because I plan to run Group BY on it...
+-- Sharding key is CallStackHash
 CREATE TABLE IF NOT EXISTS
     flamedb.samples
     ON CLUSTER '{cluster}' AS
