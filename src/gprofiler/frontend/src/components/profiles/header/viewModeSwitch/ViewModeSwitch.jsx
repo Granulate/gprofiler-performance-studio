@@ -26,7 +26,7 @@ const VIEW_TO_ICON_NAME = {
 };
 
 const getUrlWithOtherViewMode = (viewMode) => {
-    let url = new URL(window.location.href);
+  const url = new URL(window.location.href);
     url.searchParams.set('view', viewMode);
     return url.toString();
 };

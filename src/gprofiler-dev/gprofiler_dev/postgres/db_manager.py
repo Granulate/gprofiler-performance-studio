@@ -287,7 +287,8 @@ class DBManager(metaclass=Singleton):
             if is_new_indication:
                 return db_id
             return abs(db_id)
-        return self.db.execute(SQLQueries.SELECT_SERVICE, key)
+        result = self.db.execute(SQLQueries.SELECT_SERVICE, key)
+        return result
 
     def get_service(self, service_name: str) -> int:
         return self.db.execute(SQLQueries.SELECT_SERVICE, (service_name, ))
@@ -457,18 +458,20 @@ class DBManager(metaclass=Singleton):
         values["total_seconds"] = total_seconds
         if hostname:
             values["hostname"] = hostname
-            return self.db.execute(
+            result = self.db.execute(
                 AggregationSQLQueries.NODES_CORES_SUMMARY_BY_HOST,
                 values,
                 one_value=True,
                 return_dict=True,
             )
-        return self.db.execute(
+            return result
+        result = self.db.execute(
             AggregationSQLQueries.NODES_CORES_SUMMARY,
             values,
             one_value=True,
             return_dict=True,
         )
+        return result
 
     def get_nodes_and_cores_graph(
         self,
@@ -484,17 +487,18 @@ class DBManager(metaclass=Singleton):
         if hostname:
             hostname_condition = "AND profilerProcesses.hostname = %(hostname)s"
             values["hostname"] = hostname
-        return self.db.execute(
+        result = self.db.execute(
             AggregationSQLQueries.NODES_CORES_SUMMARY_GRAPH.format(hostname=hostname_condition),
             values,
             one_value=False,
             return_dict=True,
             fetch_all=True,
         )
+        return result
 
     def get_agents(self, service_id):
         values = (AGENT_RETENTION_HOURS, service_id)
-        return self.db.execute(
+        result = self.db.execute(
             AggregationSQLQueries.PROFILER_AGENTS_BY_SERVICE,
             values,
             has_value=True,
@@ -502,12 +506,13 @@ class DBManager(metaclass=Singleton):
             return_dict=True,
             fetch_all=True,
         )
+        return result
 
     def get_services_with_data_indication(self):
         values = {
             "hours_interval": SERVICES_LIST_HOURS_INTERVAL
         }
-        return self.db.execute(
+        result = self.db.execute(
             AggregationSQLQueries.SERVICES_SELECTION_WITH_DATA_INDICATION,
             values,
             has_value=True,
@@ -515,20 +520,23 @@ class DBManager(metaclass=Singleton):
             return_dict=True,
             fetch_all=True,
         )
+        return result
 
     def update_processes(self, processes: List[int]):
-        self.db.execute(
+        result = self.db.execute(
             SQLQueries.UPDATE_PROFILER_PROCESSES_LAST_SEEN_TIME,
             [(v,) for v in processes],
             has_value=False,
             execute_values=True,
         )
+        return result
 
     def get_filters(self, service_id: int) -> List[Dict]:
         values = {"service_id": service_id}
-        return self.db.execute(
+        result = self.db.execute(
             SQLQueries.GET_FILTERS_BY_SERVICE_ID, values, one_value=False, return_dict=True, fetch_all=True
         )
+        return result
 
     def add_filter(self, service_id: int, filter_content: str):
         values = {"service_id": service_id, "filter_content": filter_content}
@@ -565,7 +573,8 @@ class DBManager(metaclass=Singleton):
         )
 
     def get_service_id_by_name(self, service_name: str) -> int:
-        return self.db.execute(SQLQueries.SELECT_SERVICE_ID_BY_NAME, (service_name, ))
+        result = self.db.execute(SQLQueries.SELECT_SERVICE_ID_BY_NAME, (service_name, ))
+        return result
 
     def update_tokens_last_seen(self, tokens: Set[tuple[int, str, int]]):
         self.db.execute(

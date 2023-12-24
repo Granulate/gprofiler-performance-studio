@@ -65,8 +65,10 @@ class PostgresDB:
         if not has_value:
             return (None,)
         if fetch_all:
-            return cursor.fetchall()
-        return cursor.fetchone()
+            result = cursor.fetchall()
+            return result
+        result = cursor.fetchone()
+        return result
 
     def execute(
         self,
