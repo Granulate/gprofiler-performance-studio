@@ -1,3 +1,5 @@
+import {buildPermaLink} from "@/utils/fgUtils";
+
 {/*
  * INTEL CONFIDENTIAL
  * Copyright (C) 2023 Intel Corporation
@@ -7,6 +9,8 @@
 
 import { Box, ListItemButton, ListItemIcon, Menu } from '@mui/material';
 import { useContext, useState } from 'react';
+import {useLocation} from "react-router-dom";
+
 
 import Button from '@/components/common/button/Button';
 import Icon from '@/components/common/icon/Icon';
@@ -15,7 +19,7 @@ import Flexbox from '@/components/common/layout/Flexbox';
 import { FgContext, SelectorsContext } from '@/states';
 import { FilterTagsContext } from '@/states/filters/FiltersTagsContext';
 import { COLORS } from '@/theme/colors';
-import { PROFILES_VIEWS } from '@/utils/consts';
+import {PAGES, PROFILES_VIEWS} from '@/utils/consts';
 
 import ViewModeTooltip from './ViewModeTooltip';
 
@@ -26,10 +30,13 @@ const VIEW_TO_ICON_NAME = {
 };
 
 const getUrlWithOtherViewMode = (viewMode) => {
-  const url = new URL(window.location.href);
-  const safeViewMode = encodeURIComponent(viewMode);
+    const { search, pathname } = useLocation();
+    const safeViewMode = encodeURIComponent(viewMode);
+    let link = `${window.location.protocol}//${window.location.host}${pathname}${(search)}`;
+    const url = new URL(link);
     url.searchParams.set('view', safeViewMode);
-    return url
+    return url.toString()
+
 };
 
 const ViewModeSwitch = () => {
