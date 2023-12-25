@@ -29,7 +29,7 @@ const getUrlWithOtherViewMode = (viewMode) => {
   const url = new URL(window.location.href);
   const safeViewMode = encodeURIComponent(viewMode);
     url.searchParams.set('view', safeViewMode);
-    return url.toString();
+    return url
 };
 
 const ViewModeSwitch = () => {
