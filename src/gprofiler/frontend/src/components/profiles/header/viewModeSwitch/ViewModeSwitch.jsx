@@ -26,7 +26,7 @@ const VIEW_TO_ICON_NAME = {
 };
 
 const getUrlWithOtherViewMode = (viewMode) => {
-  const url = new URL(window.location.href);
+  const url = new URL(window.location.origin);
     url.searchParams.set('view', viewMode);
     return url.toString();
 };
@@ -123,13 +123,14 @@ const ViewModeSwitch = () => {
                     horizontal: mainClicked ? 'left' : 'right',
                 }}>
                 {Object.keys(PROFILES_VIEWS).map((view) => {
+                    const url = getUrlWithOtherViewMode(view)
                     return (
                         <ViewModeTooltip viewMode={view} key={view}>
                             <ListItemButton
                                 component='a'
                                 onClick={(e) => onChooseView(e, view)}
                                 sx={{ margin: 0, px: 3, py: 3, '&:hover': { backgroundColor: 'hoverGrey.main' } }}
-                                href={getUrlWithOtherViewMode(view)}>
+                                href={url}>
                                 <ListItemIcon sx={{ minWidth: '10px !important' }}>
                                     <Icon
                                         name={VIEW_TO_ICON_NAME[view]}
