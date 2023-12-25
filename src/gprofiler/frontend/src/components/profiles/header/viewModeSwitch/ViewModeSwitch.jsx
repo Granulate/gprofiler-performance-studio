@@ -1,5 +1,3 @@
-import {buildPermaLink} from "@/utils/fgUtils";
-
 {/*
  * INTEL CONFIDENTIAL
  * Copyright (C) 2023 Intel Corporation

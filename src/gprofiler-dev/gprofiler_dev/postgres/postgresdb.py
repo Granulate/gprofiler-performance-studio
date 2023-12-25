@@ -70,6 +70,15 @@ class PostgresDB:
         result = cursor.fetchone()
         return result
 
+    def _sanitize_args(self, args):
+        if isinstance(args, tuple):
+            return tuple(self._sanitize_value(arg) for arg in args)
+        elif isinstance(args, list):
+            return [self._sanitize_value(arg) for arg in args]
+        elif isinstance(args, dict):
+            return {key: self._sanitize_value(value) for key, value in args.items()}
+        return args
+
     def execute(
         self,
         sql_query: str,
@@ -89,10 +98,13 @@ class PostgresDB:
                             cursor_factory=psycopg2.extras.RealDictCursor if return_dict else None
                         ) as cursor:
                             try:
+                                # Sanitize args before executing the query
+                                sanitized_args = self._sanitize_args(args)
+
                                 out = self._execute(
                                     cursor,
                                     sql_query,
-                                    args,
+                                    sanitized_args,
                                     has_value,
                                     execute_values=execute_values,
                                     fetch_all=fetch_all,
