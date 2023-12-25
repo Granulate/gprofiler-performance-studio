@@ -17,7 +17,7 @@ import Flexbox from '@/components/common/layout/Flexbox';
 import { FgContext, SelectorsContext } from '@/states';
 import { FilterTagsContext } from '@/states/filters/FiltersTagsContext';
 import { COLORS } from '@/theme/colors';
-import {PAGES, PROFILES_VIEWS} from '@/utils/consts';
+import {PROFILES_VIEWS} from '@/utils/consts';
 
 import ViewModeTooltip from './ViewModeTooltip';
 
