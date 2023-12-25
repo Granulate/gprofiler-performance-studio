@@ -32,11 +32,14 @@ const VIEW_TO_ICON_NAME = {
 const getUrlWithOtherViewMode = (viewMode) => {
     const { search, pathname } = useLocation();
     const safeViewMode = encodeURIComponent(viewMode);
-    let link = `${window.location.protocol}//${window.location.host}${pathname}${(search)}`;
-    const url = new URL(link);
+    let baseUrl = `${window.location.protocol}//${window.location.host}${pathname}`;
+    const url = new URL(baseUrl);
+    if (search) {
+        // Remove the leading '?' from the search string before appending
+        url.search = search.substring(1);
+    }
     url.searchParams.set('view', safeViewMode);
-    return url.toString()
-
+    return url.toString();
 };
 
 const ViewModeSwitch = () => {
