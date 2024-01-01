@@ -102,7 +102,6 @@ func NewClickHouseClient(settings *ClickHouseSettings) (*ClickHouseClient, error
 		TLS:   tlsCfg,
 		Debug: false,
 		Debugf: func(format string, v ...interface{}) {
-			fmt.Printf(format, v)
 		},
 		Settings: clickhouse.Settings{
 			"max_execution_time": 60,

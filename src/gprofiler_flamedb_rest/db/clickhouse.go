@@ -262,11 +262,6 @@ func NewClickHouseClient(addr string) *ClickHouseClient {
 		log.Fatal(err)
 	}
 	if err := db.Ping(); err != nil {
-		if exception, ok := err.(*clickhouse.Exception); ok {
-			fmt.Printf("[%d] %s \n%s\n", exception.Code, exception.Message, exception.StackTrace)
-		} else {
-			fmt.Println(err)
-		}
 		log.Fatalf("ping failed")
 		return nil
 	}
@@ -394,7 +389,6 @@ func (c *ClickHouseClient) FetchInstanceTypeCount(ctx context.Context, params co
 
 	query := fmt.Sprintf(selectQuery, params.ServiceId, common.FormatTime(params.StartDateTime),
 		common.FormatTime(params.EndDateTime), conditions)
-	fmt.Println(query)
 
 	rows, err := c.client.Query(query)
 	if err == nil {
@@ -426,7 +420,6 @@ func (c *ClickHouseClient) FetchFieldValueSample(ctx context.Context, field stri
 		(Timestamp BETWEEN '%s' AND '%s') %s GROUP BY %s ORDER BY samples DESC;`
 	query := fmt.Sprintf(selectQuery, field, params.ServiceId, common.FormatTime(params.StartDateTime),
 		common.FormatTime(params.EndDateTime), conditions, field)
-	fmt.Println(query)
 
 	rows, err := c.client.Query(query)
 	if err == nil {
@@ -458,7 +451,6 @@ func (c *ClickHouseClient) FetchFieldValues(ctx context.Context, field string, p
 				(Timestamp BETWEEN '%s' AND '%s') %s GROUP BY %s;
 			`, field, params.ServiceId, common.FormatTime(params.StartDateTime),
 		common.FormatTime(params.EndDateTime), conditions, field)
-	fmt.Println(query)
 
 	rows, err := c.client.Query(query)
 	if err == nil {
@@ -493,7 +485,6 @@ func (c *ClickHouseClient) FetchSampleCount(ctx context.Context, params common.Q
                  ORDER BY Datetime DESC;
 	`, interval, params.ServiceId, common.FormatTime(params.StartDateTime),
 		common.FormatTime(params.EndDateTime), conditions)
-	fmt.Println(query)
 	rows, err := c.client.Query(query)
 	if err == nil {
 		defer rows.Close()
