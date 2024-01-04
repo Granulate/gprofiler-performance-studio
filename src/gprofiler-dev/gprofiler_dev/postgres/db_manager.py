@@ -440,11 +440,20 @@ class DBManager(metaclass=Singleton):
         hostname: Optional[str],
     ) -> Dict:
         total_seconds = (end_time - start_time).total_seconds()
-        values = {"service_id": service_id, "start_time": start_time, "end_time": end_time}
+
         if ignore_zeros:
             res = self.db.execute(
-                AggregationSQLQueries.PROFILER_PROCESS_TIMERANGES_BY_SERVICE,
-                values,
+                """
+                        SELECT GREATEST(ProfilerProcesses.ts, %(start_time)s) as first_seen,
+                               LEAST(ProfilerProcesses.last_seen, %(end_time)s) as last_seen
+                        FROM ProfilerProcesses
+                        INNER JOIN InstanceRuns ON InstanceRuns.ID = ProfilerProcesses.instance_run
+                        INNER JOIN Machines ON Machines.ID = InstanceRuns.machine
+                        WHERE ProfilerProcesses.last_seen >= %(start_time)s AND
+                              ProfilerProcesses.ts < %(end_time)s AND
+                              ProfilerProcesses.service = %(service_id)s
+                        """,
+                {"service_id": service_id, "start_time": start_time, "end_time": end_time},
                 one_value=False,
                 return_dict=True,
                 fetch_all=True
