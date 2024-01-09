@@ -263,11 +263,11 @@ func NewClickHouseClient(addr string) *ClickHouseClient {
 	}
 	if err := db.Ping(); err != nil {
 		if exception, ok := err.(*clickhouse.Exception); ok {
-			log.Fatalf("[%d] %s \n%s\n", exception.Code, exception.Message, exception.StackTrace)
+			fmt.Printf("[%d] %s \n%s\n", exception.Code, exception.Message, exception.StackTrace)
 		} else {
-		    log.Fatal(err)
+			fmt.Println(err)
 		}
-		    log.Fatalf("ping failed")
+		log.Fatalf("ping failed")
 		return nil
 	}
 	return &ClickHouseClient{
