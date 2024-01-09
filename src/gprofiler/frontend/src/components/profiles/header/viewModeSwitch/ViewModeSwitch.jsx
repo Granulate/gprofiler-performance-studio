@@ -7,6 +7,7 @@
 
 import { Box, ListItemButton, ListItemIcon, Menu } from '@mui/material';
 import { useContext, useState } from 'react';
+import { useLocation } from "react-router-dom";
 
 import Button from '@/components/common/button/Button';
 import Icon from '@/components/common/icon/Icon';
@@ -26,8 +27,15 @@ const VIEW_TO_ICON_NAME = {
 };
 
 const getUrlWithOtherViewMode = (viewMode) => {
-    let url = new URL(window.location.href);
-    url.searchParams.set('view', viewMode);
+    const { search, pathname } = useLocation();
+    const safeViewMode = encodeURIComponent(viewMode);
+    let baseUrl = `${window.location.protocol}//${window.location.host}${pathname}`;
+    const url = new URL(baseUrl);
+    if (search) {
+        // Remove the leading '?' from the search string before appending
+        url.search = search.substring(1);
+    }
+    url.searchParams.set('view', safeViewMode);
     return url.toString();
 };
 
@@ -123,13 +131,14 @@ const ViewModeSwitch = () => {
                     horizontal: mainClicked ? 'left' : 'right',
                 }}>
                 {Object.keys(PROFILES_VIEWS).map((view) => {
+                    const url = getUrlWithOtherViewMode(view)
                     return (
                         <ViewModeTooltip viewMode={view} key={view}>
                             <ListItemButton
                                 component='a'
                                 onClick={(e) => onChooseView(e, view)}
                                 sx={{ margin: 0, px: 3, py: 3, '&:hover': { backgroundColor: 'hoverGrey.main' } }}
-                                href={getUrlWithOtherViewMode(view)}>
+                                href={url}>
                                 <ListItemIcon sx={{ minWidth: '10px !important' }}>
                                     <Icon
                                         name={VIEW_TO_ICON_NAME[view]}
