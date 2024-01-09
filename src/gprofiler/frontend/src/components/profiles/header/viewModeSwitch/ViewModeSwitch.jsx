@@ -9,7 +9,6 @@ import { Box, ListItemButton, ListItemIcon, Menu } from '@mui/material';
 import { useContext, useState } from 'react';
 import {useLocation} from "react-router-dom";
 
-
 import Button from '@/components/common/button/Button';
 import Icon from '@/components/common/icon/Icon';
 import { ICONS_NAMES } from '@/components/common/icon/iconsData';
