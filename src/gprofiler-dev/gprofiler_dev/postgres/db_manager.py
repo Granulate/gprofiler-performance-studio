@@ -559,8 +559,8 @@ class DBManager(metaclass=Singleton):
         return self.db.execute(
             SQLQueries.SELECT_PROFILER_TOKEN_ID,
             {"token": token},
-            return_dict=True,
-            fetch_all=True,
+            return_dict=False,
+            fetch_all=False,
             one_value=True
         )
 

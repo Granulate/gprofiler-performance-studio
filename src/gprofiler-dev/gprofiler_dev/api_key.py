@@ -23,7 +23,7 @@ def get_service_by_api_key(api_key: str, service_name: str) -> Optional[Tuple[st
         return valid_service_name(service_name), token_id
 
     except Exception as e:
-        logging.exception(f"unexpected exception {e}", extra={"migration_error": "unexpected"})
+        logging.exception(f"Unexpected exception during token parse: {e}")
         return None
 
 

@@ -51,8 +51,11 @@ services:
     container_name: gprofiler-ps-webapp
     restart: always
     environment:
-      - BUCKET_NAME=${BUCKET_NAME}
-      - QUERY_API_BASE_URL=http://ch-rest-service:8080
+      - BUCKET_NAME=$BUCKET_NAME
+      - QUERY_API_BASE_URL=https://ch-rest-service:4433
+      - REST_VERIFY_TLS=FALSE
+      - REST_USERNAME=$REST_USERNAME
+      - REST_PASSWORD=$REST_PASSWORD
       - SQS_INDEXER_QUEUE_URL=$SQS_INDEXER_QUEUE_URL
       - GPROFILER_POSTGRES_DB_NAME=$POSTGRES_DB
       - GPROFILER_POSTGRES_PORT=$POSTGRES_PORT
@@ -87,8 +90,13 @@ services:
       - AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
       - AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN
+      - CERT_FILE_PATH=/tls/ch_rest_cert.pem
+      - KEY_FILE_PATH=/tls/ch_rest_key.pem
+      - BASIC_AUTH_CREDENTIALS=${REST_USERNAME}:${REST_PASSWORD}
     depends_on:
       - db_clickhouse
+    volumes:
+      - "./tls:/tls"
 
   # ---
   agents-logs-backend:
@@ -156,10 +164,12 @@ services:
     image: nginx:1.23.3
     container_name: gprofiler-ps-nginx-load-balancer
     restart: always
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
     ports:
-      - "8888:80"
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./https_nginx.conf:/etc/nginx/nginx.conf
+      - ./tls:/etc/nginx/tls
     depends_on:
       - agents-logs-backend
       - webapp

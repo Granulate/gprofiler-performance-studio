@@ -7,6 +7,7 @@ package main
 
 import (
 	"flag"
+	"log"
 	"restflamedb/common"
 	"restflamedb/config"
 	"restflamedb/db"
@@ -27,6 +28,18 @@ func main() {
 	flag.StringVar(&config.ClickHouseMetricsTable, "clickhouse-metrics-table",
 		common.LookupEnvOrDefault("CLICKHOUSE_METRICS_TABLE", config.ClickHouseMetricsTable),
 		"ClickHouse metrics table (default metrics)")
+	flag.BoolVar(&config.UseTLS, "use-tls",
+		common.LookupEnvOrDefault("USE_TLS", config.UseTLS),
+		"Run server with TLS ('false' or '0' to disable), (default true)")
+	flag.StringVar(&config.CertFilePath, "cert-file-path",
+		common.LookupEnvOrDefault("CERT_FILE_PATH", config.CertFilePath),
+		"default empty")
+	flag.StringVar(&config.KeyFilePath, "key-file-path",
+		common.LookupEnvOrDefault("KEY_FILE_PATH", config.KeyFilePath),
+		"default empty")
+	flag.StringVar(&config.Credentials, "basic-auth-credentials",
+		common.LookupEnvOrDefault("BASIC_AUTH_CREDENTIALS", config.Credentials),
+		"Credentials to use in basic auth header")
 	flag.Parse()
 
 	h := handlers.Handlers{
@@ -34,6 +47,13 @@ func main() {
 	}
 
 	router := gin.Default()
+
+	authorizedUsers, err := common.ParseCredentials(config.Credentials)
+	if err != nil {
+		log.Fatalf("Error parsing basic auth credentials: %v", err)
+	}
+	router.Use(gin.BasicAuth(authorizedUsers))
+
 	cfg := cors.DefaultConfig()
 	// Allow all origins
 	cfg.AllowAllOrigins = true
@@ -49,5 +69,9 @@ func main() {
 	router.POST("/api/v1/metrics/services_list_summary", h.GetMetricsServicesListSummary)
 	router.GET("/api/v1/metrics/graph", h.GetMetricsGraph)
 	router.GET("/api/v1/metrics/cpu_trend", h.GetMetricsCpuTrends)
-	router.Run("0.0.0.0:8080")
+	if config.UseTLS {
+		router.RunTLS("0.0.0.0:4433", config.CertFilePath, config.KeyFilePath)
+	} else {
+		router.Run("0.0.0.0:8080")
+	}
 }

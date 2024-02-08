@@ -81,50 +81,44 @@ gprofiler-ps-webapp                deploy-webapp                              ".
 Now You can access the UI by navigating to http://localhost:8888 in your browser
 (8888 is the default port, configurable in the docker-compose.yml file).
 
-### SSL Configuration
+### Securing Connections with SSL/TLS
 When accessing the gprofiler UI through the web,
 it is important to set up HTTPS to ensure the communication between gprofiler and the end user is encrypted.
+As well as communication between webapp and ch-rest-service expected to be encrypted.
 
 Besides the security aspect, this is also required
 for the browser to allow the use of some UI features that are blocked by browsers for non-HTTPS connections.
 
 
-To enable SSL, you need to use the `deploy/https_nginx.conf` file instead of `deploy/nginx.conf`.
-In addition, you need to provide the following files:
-- `deploy/ssl/cert.pem` - SSL certificate
-- `deploy/ssl/key.pem` - SSL key
+The TLS is enabled by default, but it requires you to provide a certificates:
+
+Main nginx certificates location
+- `deploy/tls/cert.pem` - TLS certificate
+- `deploy/tls/key.pem` - TLS key
 
 _See [Self-signed certificate](#self-signed-certificate) for more details._
 
-Here is how it should look in the `deploy/docker-compose.yml` file:
-```shell
-nginx-load-balancer:
-  image: nginx:1.23.3
-  container_name: gprofiler-ps-nginx-load-balancer
-  restart: always
-  ports:
-    - "80:80"
-    - "443:443"
-  volumes:
-    - ./https_nginx.conf:/etc/nginx/nginx.conf
-    - ./ssl:/etc/nginx/ssl
-  depends_on:
-    - agents-logs-backend
-    - webapp
-```
+CH REST service certificates location:
+- `deploy/tls/ch_rest_cert.pem` - TLS certificate
+- `deploy/tls/ch_rest_key.pem` - TLS key
+
+
+If you run 
+_See [Self-signed certificate](#self-signed-certificate) for more details._
 
 #### Self-signed certificate
 If you don't have a certificate, you can generate a self-signed certificate using the following command:
 ```shell
 cd deploy
-mkdir -p ssl
-openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ssl/key.pem -out ssl/cert.pem
+mkdir -p tls
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout tls/key.pem -out tls/cert.pem
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout tls/ch_rest_key.pem -out tls/ch_rest_cert.pem
 ```
 Pay attention, self-signed certificates are not trusted by browsers and will require you to add an exception.
 
 :bangbang: IMPORTANT: If you are using a self-signed certificate,
 you need the agent to trust it,
-or to disable the SSL verification by adding `--no-verify` flag to the agent configuration.
+or to disable the TLS verification by adding `--no-verify` flag to the agent configuration.
 
 For example,
 that will run a docker installation agent with self-signed certificate
