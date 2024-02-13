@@ -5,7 +5,7 @@
 
 import datetime
 from enum import Enum
-from typing import Dict, Optional
+from typing import Dict
 
 from pydantic import BaseModel
 
@@ -56,5 +56,5 @@ class AgentMetadata(BaseModel):
 
 class GetServiceResponse(BaseModel):
     service_id: int
-    profiler_process_id: Optional[int]
+    profiler_process_id: int
     does_service_exist: bool

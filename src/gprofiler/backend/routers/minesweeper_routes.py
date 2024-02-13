@@ -24,8 +24,8 @@ def get_snapshot(snapshot_id: int):
             start_time=snapshot_frames_list[0].get("start_time"),
             end_time=snapshot_frames_list[0].get("end_time"),
             filter=snapshot_frames_list[0].get("filter_content"),
-            frames=[],
         )
+        snapshot.frames = []
 
         for snapshot_frame in snapshot_frames_list:
             frame = Frame(

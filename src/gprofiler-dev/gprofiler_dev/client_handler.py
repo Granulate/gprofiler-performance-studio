@@ -9,12 +9,10 @@ import logging
 
 from gprofiler_dev.s3_profile_dal import S3ProfileDal
 
-
 logger = logging.getLogger(__name__)
 
 
 class ClientHandler:
-
     def __init__(
         self,
         service_name: str,

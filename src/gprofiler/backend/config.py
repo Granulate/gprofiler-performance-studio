@@ -26,7 +26,7 @@ STACKS_COUNT_DEFAULT = int(os.getenv("STACKS_COUNT_DEFAULT", 10000))
 
 REST_VERIFY_TLS = os.getenv("REST_VERIFY_TLS", "TRUE").upper() not in ["FALSE", "0"]
 REST_CERTIFICATE_PATH = os.getenv("REST_CERTIFICATE_PATH", REST_VERIFY_TLS)
-REST_USERNAME = os.getenv("REST_USERNAME")
-REST_PASSWORD = os.getenv("REST_PASSWORD")
+REST_USERNAME = os.getenv("REST_USERNAME", "")
+REST_PASSWORD = os.getenv("REST_PASSWORD", "")
 
 BACKEND_ROOT = os.path.dirname(os.path.realpath(__file__))

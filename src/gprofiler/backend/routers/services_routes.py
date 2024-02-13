@@ -22,4 +22,3 @@ def get_services():
     if not services_list:
         return Response(status_code=204)
     return services_list
-

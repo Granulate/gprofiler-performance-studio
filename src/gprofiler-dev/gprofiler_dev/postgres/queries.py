@@ -155,9 +155,7 @@ class SQLQueries:
     )
     ADD_OR_FETCH_SERVICE = "SELECT * FROM get_service(%s, service_env_type := %s, use_dot_logic := FALSE)"
     SELECT_DEPLOYMENT = "SELECT Services.ID FROM Services WHERE Services.cluster_id = %s AND Services.name = %s"
-    ADD_OR_FETCH_DEPLOYMENT = (
-        "SELECT * FROM get_deployment(my_cluster_id:= %s, service_name:= %s, namespace:= %s)"
-    )
+    ADD_OR_FETCH_DEPLOYMENT = "SELECT * FROM get_deployment(my_cluster_id:= %s, service_name:= %s, namespace:= %s)"
     ADD_OR_FETCH_INSTANCE_RUN = "SELECT * FROM get_instance_run(%s, %s, %s, %s, %s)"
     FIX_INSTANCE_RUN_MACHINE = dedent(
         """
@@ -373,7 +371,7 @@ class AggregationSQLQueries:
                 ProfilerProcesses.ts < %(end_time)s AND
                 ProfilerProcesses.service = %(service_id)s AND
                 ProfilerProcesses.hostname = %(hostname)s
-        ) 
+        )
         /* Here we sum all durations and divide it by total timerange seconds count, to get average node count
            To get average cores count, we sum multiplies duration by cores and also divide it by total seconds
            in time range.
@@ -454,7 +452,7 @@ class AggregationSQLQueries:
             INNER JOIN Machines ON Machines.ID = InstanceRuns.machine
         ), ServicesCoresNodes AS (
             SELECT
-                COUNT(DISTINCT UniqueProfilerProcesses.service) AS services,  
+                COUNT(DISTINCT UniqueProfilerProcesses.service) AS services,
                 CAST(CEILING(SUM(duration) / (EXTRACT(EPOCH FROM (%(retention_hours)s * INTERVAL '1 hours')))) AS INTEGER) AS instances,
                 CAST(ROUND(SUM(duration * processors) / (EXTRACT(EPOCH FROM (%(retention_hours)s * INTERVAL '1 hours')))) AS INTEGER) AS cores
             FROM UniqueProfilerProcesses

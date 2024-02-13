@@ -6,14 +6,9 @@
 from logging import getLogger
 from typing import List
 
-from backend.models.overview_models import (
-    Overview,
-    OverviewAgents,
-    OverviewService,
-)
+from backend.models.overview_models import Overview, OverviewAgents, OverviewService
 from fastapi import APIRouter
 from gprofiler_dev.postgres.db_manager import DBManager
-
 
 logger = getLogger(__name__)
 router = APIRouter()

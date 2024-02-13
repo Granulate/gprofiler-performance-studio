@@ -11,11 +11,7 @@ from backend.models.filters_models import RQLFilter
 from backend.models.flamegraph_models import FGDateTimeDataRange, FGParamsBaseModel, FGParamsModel, FlameGraph
 from backend.utils.flamegraph_utils import get_file_name, get_svg_file
 from backend.utils.json_param import json_param
-from backend.utils.request_utils import (
-    flamegraph_request_params,
-    get_flamegraph_response,
-    get_query_response,
-)
+from backend.utils.request_utils import flamegraph_request_params, get_flamegraph_response, get_query_response
 from dateutil.relativedelta import relativedelta
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import StreamingResponse
@@ -50,9 +46,7 @@ def get_datetime_with_data(
     response_model=FlameGraph,
     responses={200: {"content": {"text/plain": {}}}, 204: {"description": "Good request, just has no data"}},
 )
-def get_flamegraph(
-    fg_params: FGParamsModel = Depends(flamegraph_request_params)
-):
+def get_flamegraph(fg_params: FGParamsModel = Depends(flamegraph_request_params)):
     response = get_flamegraph_response(fg_params)
     json_file = BytesIO(response.content)
     return StreamingResponse(json_file, media_type="text/plain")
