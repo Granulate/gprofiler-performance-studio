@@ -67,7 +67,7 @@ else
         echo -e "[${RED}ERROR${NC}] table flamedb.samples not exists"
 fi
 
-curl_cmd="echo 'SELECT database,name from system.tables' | curl -s 'http://$CLICKHOUSE_USER:$CLICKHOUSE_PASSWORD@db_clickhouse:8123/?query=' --data-binary @-"
+curl_cmd="echo 'SELECT database,name from system.tables' | curl -s 'http://$CLICKHOUSE_USER:$CLICKHOUSE_PASSWORD@$CLICKHOUSE_HOST:8123/?query=' --data-binary @-"
 if docker exec gprofiler-ps-ch-rest-service bash -c "$curl_cmd" | grep -q "samples"; then
 	echo -e "[${GREEN}OK${NC}] clickhouse accessible by HTTP port and schema created"
 else
@@ -77,7 +77,10 @@ fi
 # Test container connectivity
 # ping from container A container B
 echo "--- CONNECTIVITY ---"
-for i in "gprofiler-ps-ch-rest-service db_clickhouse"
+
+services=("gprofiler-ps-ch-rest-service" $CLICKHOUSE_HOST)
+
+for i in "${services[@]}"
 do
 	set -- $i
 	docker exec $1 ping $2 -c2 > /dev/null
