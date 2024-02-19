@@ -10,7 +10,7 @@ import time
 from collections import defaultdict
 from datetime import datetime, timedelta
 from secrets import token_urlsafe
-from typing import Dict, List, Optional, Tuple, Union, Set
+from typing import Dict, List, Optional, Set, Tuple, Union
 
 from gprofiler_dev.config import INSTANCE_RUNS_LRU_CACHE_LIMIT, PROFILER_PROCESSES_LRU_CACHE_LIMIT
 from gprofiler_dev.lru_cache_impl import LRUCache
@@ -53,8 +53,8 @@ def get_total_seconds_from_intervals(intervals: List[Tuple[datetime, datetime]])
             islands.append([start, end])
             island_index += 1
         else:
-            end = max(islands[island_index-1][1], end)
-            islands[island_index-1][1] = end
+            end = max(islands[island_index - 1][1], end)
+            islands[island_index - 1][1] = end
         prev_end = end
     total_diff = timedelta()
     for island in islands:
@@ -262,14 +262,14 @@ class DBManager(metaclass=Singleton):
         return db_id
 
     def get_service_by_id(self, service_id: int) -> str:
-        key = (service_id, )
+        key = (service_id,)
         if key not in self.services:
             service = self.db.execute(SQLQueries.SELECT_SERVICE_NAME_BY_ID, key)
             self.services[key] = service
         return self.services[key]
 
     def get_service_sample_threshold_by_id(self, service_id: int) -> float:
-        key = (service_id, )
+        key = (service_id,)
         rv = self.db.execute(SQLQueries.SELECT_SERVICE_SAMPLE_THRESHOLD_BY_ID, key)
         return 0 if rv is None else rv
 
@@ -278,9 +278,9 @@ class DBManager(metaclass=Singleton):
         service_name: str,
         service_env_type: Optional[str] = None,
         create: bool = True,
-        is_new_indication: bool = True
+        is_new_indication: bool = True,
     ) -> int:
-        key = (service_name, )
+        key = (service_name,)
         value = (service_name, service_env_type)
         if create:
             db_id = self.db.execute(SQLQueries.ADD_OR_FETCH_SERVICE, value)
@@ -290,7 +290,7 @@ class DBManager(metaclass=Singleton):
         return self.db.execute(SQLQueries.SELECT_SERVICE, key)
 
     def get_service(self, service_name: str) -> int:
-        return self.db.execute(SQLQueries.SELECT_SERVICE, (service_name, ))
+        return self.db.execute(SQLQueries.SELECT_SERVICE, (service_name,))
 
     def get_snapshot(self, snapshot_id: int) -> Optional[List[Dict]]:
         values = {"snapshot_id": snapshot_id}
@@ -413,11 +413,7 @@ class DBManager(metaclass=Singleton):
         return self.db.execute(SQLQueries.GET_SERVICE_ID_BY_PROCESS_ID, (process_id,))
 
     def add_service_data(
-        self,
-        service_name: str,
-        agent_metadata: AgentMetadata,
-        extra_cache: bool,
-        service_env_type: str
+        self, service_name: str, agent_metadata: AgentMetadata, extra_cache: bool, service_env_type: str
     ) -> GetServiceResponse:
         service_id = self.get_or_create_service(service_name, service_env_type, is_new_indication=True)
 
@@ -447,7 +443,7 @@ class DBManager(metaclass=Singleton):
                 values,
                 one_value=False,
                 return_dict=True,
-                fetch_all=True
+                fetch_all=True,
             )
             if not res:
                 return res
@@ -504,9 +500,7 @@ class DBManager(metaclass=Singleton):
         )
 
     def get_services_with_data_indication(self):
-        values = {
-            "hours_interval": SERVICES_LIST_HOURS_INTERVAL
-        }
+        values = {"hours_interval": SERVICES_LIST_HOURS_INTERVAL}
         return self.db.execute(
             AggregationSQLQueries.SERVICES_SELECTION_WITH_DATA_INDICATION,
             values,
@@ -557,20 +551,14 @@ class DBManager(metaclass=Singleton):
 
     def get_profiler_token_id(self, token: str) -> int:
         return self.db.execute(
-            SQLQueries.SELECT_PROFILER_TOKEN_ID,
-            {"token": token},
-            return_dict=True,
-            fetch_all=True,
-            one_value=True
+            SQLQueries.SELECT_PROFILER_TOKEN_ID, {"token": token}, return_dict=False, fetch_all=False, one_value=True
         )
 
     def get_service_id_by_name(self, service_name: str) -> int:
-        return self.db.execute(SQLQueries.SELECT_SERVICE_ID_BY_NAME, (service_name, ))
+        return self.db.execute(SQLQueries.SELECT_SERVICE_ID_BY_NAME, (service_name,))
 
     def update_tokens_last_seen(self, tokens: Set[tuple[int, str, int]]):
-        self.db.execute(
-            SQLQueries.UPDATE_PROFILER_TOKENS_LAST_SEEN_TIME, tokens, has_value=False, execute_values=True
-        )
+        self.db.execute(SQLQueries.UPDATE_PROFILER_TOKENS_LAST_SEEN_TIME, tokens, has_value=False, execute_values=True)
 
     def get_overview_summary(self) -> Dict:
         values = {
@@ -582,10 +570,7 @@ class DBManager(metaclass=Singleton):
         )
 
     def get_services_overview_summary(self) -> List[Dict]:
-        values = {
-            "retention_hours": AGENT_RETENTION_HOURS,
-            "visible_hours": SERVICES_LIST_HOURS_VISIBLE_INTERVAL
-        }
+        values = {"retention_hours": AGENT_RETENTION_HOURS, "visible_hours": SERVICES_LIST_HOURS_VISIBLE_INTERVAL}
         return self.db.execute(
             AggregationSQLQueries.SERVICES_SUMMARY, values, one_value=False, return_dict=True, fetch_all=True
         )

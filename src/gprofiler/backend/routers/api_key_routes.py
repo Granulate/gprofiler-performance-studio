@@ -9,7 +9,6 @@ from backend.models.api_key_models import ApiKey
 from fastapi import APIRouter
 from gprofiler_dev.postgres.db_manager import DBManager
 
-
 logger = getLogger(__name__)
 router = APIRouter()
 

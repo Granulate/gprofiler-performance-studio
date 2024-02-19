@@ -9,7 +9,6 @@ from typing import Optional
 from gprofiler_dev import config
 from gprofiler_dev.postgres.postgresdb import PostgresDB
 
-
 _DB_INSTANCE: Optional[PostgresDB] = None
 THREAD_LOCAL = threading.local()
 _DB_LOCK = threading.RLock()

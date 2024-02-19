@@ -24,4 +24,7 @@ class Snapshot(CamelModel):
 
 
 class SnapshotFromUI(Snapshot):
+    start_time: datetime
+    end_time: datetime
+    frames: list[Frame]
     service_name: str

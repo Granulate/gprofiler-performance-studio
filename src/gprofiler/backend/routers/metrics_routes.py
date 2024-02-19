@@ -59,9 +59,7 @@ def get_time_interval_value(start_time: datetime, end_time: datetime, interval: 
 
 
 @router.get("/instance_type_count", response_model=List[InstanceTypeCount])
-def get_instance_type_count(
-    fg_params: FGParamsBaseModel = Depends(flamegraph_base_request_params)
-):
+def get_instance_type_count(fg_params: FGParamsBaseModel = Depends(flamegraph_base_request_params)):
     response = get_query_response(fg_params, lookup_for="instance_type_count")
     res = []
     for row in response:
@@ -115,7 +113,7 @@ def get_function_cpu_overtime(
     responses={204: {"description": "Good request, just has no data"}},
 )
 def get_flamegraph_nodes_cores_graph(
-    requested_interval: Optional[str] = "",
+    requested_interval: str = "",
     fg_params: FGParamsBaseModel = Depends(flamegraph_base_request_params),
 ):
     deployment_name = get_rql_first_eq_key(fg_params.filter, FilterTypes.K8S_OBJ_KEY)
@@ -140,7 +138,7 @@ def get_flamegraph_nodes_cores_graph(
     responses={204: {"description": "Good request, just has no data"}},
 )
 def get_metrics_summary(
-        fg_params: FGParamsBaseModel = Depends(flamegraph_base_request_params),
+    fg_params: FGParamsBaseModel = Depends(flamegraph_base_request_params),
 ):
     deployment_name = get_rql_first_eq_key(fg_params.filter, FilterTypes.K8S_OBJ_KEY)
 
@@ -177,13 +175,12 @@ def get_nodes_and_cores_metrics_summary(
     return Response(status_code=204)
 
 
-
 @router.get("/cpu_trend", response_model=CpuTrend)
 def calculate_trend_in_cpu(
-        fg_params: FGParamsBaseModel = Depends(flamegraph_base_request_params),
+    fg_params: FGParamsBaseModel = Depends(flamegraph_base_request_params),
 ):
-    diff_in_days: datetime.timedelta = (fg_params.end_time - fg_params.start_time).days
-    diff_in_hours: datetime.timedelta = (fg_params.end_time - fg_params.start_time).seconds / 3600
+    diff_in_days: int = (fg_params.end_time - fg_params.start_time).days
+    diff_in_hours: float = (fg_params.end_time - fg_params.start_time).seconds / 3600
     diff_in_weeks = timedelta(weeks=1)
 
     # if the time range is longer then onw week we would like to increase the delta in x +1 weeks from the current range
@@ -200,7 +197,7 @@ def calculate_trend_in_cpu(
         fg_params,
         lookup_for="cpu_trend",
         compared_start_datetime=compared_start_date.strftime("%Y-%m-%dT%H:%M:%S"),
-        compared_end_datetime=compared_end_date.strftime("%Y-%m-%dT%H:%M:%S")
+        compared_end_datetime=compared_end_date.strftime("%Y-%m-%dT%H:%M:%S"),
     )
 
     return response

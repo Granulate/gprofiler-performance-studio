@@ -42,6 +42,7 @@ class DaemonSetConfig:
 # gProfiler latest release date
 _DAEMON_SET_CACHE: Optional[str] = None
 _ECS_CACHE: Optional[str] = None
+_FILE_CACHE: Optional[str] = None
 _GPROFILER_LATEST_RELEASE_DATE: str = ""
 
 logger = getLogger(__name__)

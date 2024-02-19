@@ -15,11 +15,10 @@ if [[ "$1" = "--ci" ]]; then
   isort_extra_args="--check-only"
 fi
 
-SRC_DIR= "$CURRENT_DIR/src"
+SRC_DIR="$CURRENT_DIR/src"
 
 isort --settings-path "$CURRENT_DIR/.isort.cfg" $isort_extra_args "$CURRENT_DIR/src"
 
 black --line-length 120 $black_extra_args --exclude ".*venv.*" "$CURRENT_DIR/src"
 flake8 --config "$CURRENT_DIR/.flake8" "$CURRENT_DIR/src"
-mypy "$CURRENT_DIR" . --exclude="$CURRENT_DIR/src/flamedb/flamedb-backup"
-mypy "$CURRENT_DIR/src/flamedb/flamedb-backup"
+mypy "$CURRENT_DIR" --exclude ".*venv.*"

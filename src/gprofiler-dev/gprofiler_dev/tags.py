@@ -7,7 +7,6 @@ from hashlib import md5
 from itertools import takewhile
 from typing import Dict, List, Optional, Tuple
 
-
 TagsCache = Dict[str, List[Dict]]
 FilterTagList = List[Tuple[str, str, str]]
 HOSTNAME_KEY = "HostName"
@@ -34,10 +33,10 @@ BASE_16_REAL_WORDS = {
 
 class FilterTags:
     def __init__(self):
-        self.db = None # not implemented
+        self.db = None  # not implemented
 
     def add(self, service: str, filter_tag: str, ui_filter: str = ""):
-        #not implemented
+        # not implemented
         return None
 
     def list(self, service: str, just_new: bool = False):

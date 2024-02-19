@@ -15,7 +15,7 @@ COPY gprofiler_logging/requirements.txt requirements.txt
 # run pip
 RUN pip install -e ./gprofiler-dev[postgres]
 RUN pip install -r requirements.txt
-RUN pip install psycopg2==2.9.2
+RUN pip install psycopg2==2.9.9
 
 # copy all files
 COPY gprofiler-dev gprofiler-dev
