@@ -11,13 +11,12 @@ from logging import getLogger
 from typing import List, Union
 
 import boto3
-
 from backend import config
 from backend.models.profiles_models import AgentData, ProfileResponse
 from backend.utils.profiles_utils import GzipRoute, get_profile_file_name
 from botocore.config import Config
 from cmp_version import VersionString
-from fastapi import APIRouter, Depends, Header, HTTPException, Request
+from fastapi import APIRouter, Header, HTTPException, Request
 from gprofiler_dev import get_s3_profile_dal
 from gprofiler_dev.api_key import get_service_by_api_key
 from gprofiler_dev.client_handler import ClientHandler
@@ -37,7 +36,12 @@ router.route_class = GzipRoute
 
 
 @router.post("", response_model=ProfileResponse)
-def new_profile_v2(request: Request, agent_data: AgentData, gprofiler_api_key: str = Header(...), gprofiler_service_name: str = Header(...)):
+def new_profile_v2(
+    request: Request,
+    agent_data: AgentData,
+    gprofiler_api_key: str = Header(...),
+    gprofiler_service_name: str = Header(...),
+):
     try:
         service_name, token_id = get_service_by_api_key(gprofiler_api_key, gprofiler_service_name)
         if not service_name:
@@ -112,10 +116,7 @@ def new_profile_v2(request: Request, agent_data: AgentData, gprofiler_api_key: s
                             gpid = gprofiler_process_id
                         else:
                             service_response = db_manager.add_service_data(
-                                service_name,
-                                agent_metadata,
-                                extra_cache=False,
-                                service_env_type=service_env_type
+                                service_name, agent_metadata, extra_cache=False, service_env_type=service_env_type
                             )
                             gpid = service_response.profiler_process_id
                     else:
@@ -168,7 +169,7 @@ def new_profile_v2(request: Request, agent_data: AgentData, gprofiler_api_key: s
         # Task will be sent to indexer only if generated random value (0.0 to 1.0 range)
         # is greater or equal maximal threshold value which is by default 0 (down sampling off).
         # The threshold could be changed in range 0.0 to 1.0 per client/service.
-        if random_value >= service_sample_threshold or 'test' in service_name:
+        if random_value >= service_sample_threshold or "test" in service_name:
             sqs = boto3.client("sqs", config=SQS_CONFIG, endpoint_url=config.SQS_ENDPOINT_URL)
             msg: dict[str, Union[str, int]] = {
                 "filename": profile_file_name,

@@ -10,7 +10,6 @@ import yaml
 from backend.models.installation_models import FileType
 from backend.utils.download_external import get_k8s_template, get_template
 from fastapi.responses import StreamingResponse
-
 from gprofiler_dev.postgres.db_manager import DBManager
 
 

@@ -48,17 +48,17 @@ Before using the gProfiler Performance Studio, ensure the following:
 ### Running the stack
 To run the entire stack built from source, use the docker-compose project located in the `deploy` directory.
 
-The deploy directory contains:
-
+The `deploy` directory contains:
 - `docker-compose.yml` - The Docker compose file.
 - `.env` - The environment file where you set your AWS credentials, SQS/S3 names, and AWS region.
-- `nginx.conf` - Nginx configuration file used as an entrypoint load balancer.
+- `https_nginx.conf` - Nginx configuration file used as an entrypoint load balancer.
 - `diagnostics.sh`- A script for testing connectivity between services and printing useful information.
+
 
 To launch the stack, run the following commands in the `deploy` directory:
 ```shell
 cd deploy
-docker-compose up -d --build
+docker-compose --profile with-clickhouse up -d --build
 ```
 
 Check that all services are running:
@@ -68,18 +68,25 @@ docker-compose ps
 
 You should see something like this
 ```shell
-NAME                               IMAGE                                      COMMAND                  SERVICE               CREATED             STATUS              PORTS       
-gprofiler-ps-agents-logs-backend   deploy-agents-logs-backend                 "./run.sh"               agents-logs-backend   17 seconds ago      Up 14 seconds       80/tcp
-gprofiler-ps-ch-indexer            deploy-ch-indexer                          "/indexer"               ch-indexer            17 seconds ago      Up 15 seconds       
-gprofiler-ps-ch-rest-service       deploy-ch-rest-service                     "/usr/local/bin/app"     ch-rest-service       17 seconds ago      Up 5 seconds        8080/tcp
-gprofiler-ps-clickhouse            clickhouse/clickhouse-server:22.8          "/entrypoint.sh"         db_clickhouse         17 seconds ago      Up 14 seconds       0.0.0.0:8123->8123/tcp, 0.0.0.0:9000->9000/tcp, 0.0.0.0:9009->9009/tcp
-gprofiler-ps-nginx-load-balancer   nginx:1.23.3                               "/docker-entrypoint.…"   nginx-load-balancer   17 seconds ago      Up 14 seconds       0.0.0.0:8888->80/tcp
-gprofiler-ps-postgres              postgres:15.1                              "docker-entrypoint.s…"   db_postgres           17 seconds ago      Up 14 seconds       0.0.0.0:54321->5432/tcp
-gprofiler-ps-webapp                deploy-webapp                              "./run.sh"               webapp                17 seconds ago      Up 14 seconds       80/tcp
+NAME                               IMAGE                               COMMAND                  SERVICE               CREATED         STATUS         PORTS
+gprofiler-ps-agents-logs-backend   deploy-agents-logs-backend          "./run.sh"               agents-logs-backend   4 minutes ago   Up 4 minutes   80/tcp
+gprofiler-ps-ch-indexer            deploy-ch-indexer                   "/indexer"               ch-indexer            4 minutes ago   Up 4 minutes   
+gprofiler-ps-ch-rest-service       deploy-ch-rest-service              "/usr/local/bin/app"     ch-rest-service       4 minutes ago   Up 4 minutes
+gprofiler-ps-clickhouse            clickhouse/clickhouse-server:22.8   "/entrypoint.sh"         db_clickhouse         4 minutes ago   Up 4 minutes   8123/tcp, 9000/tcp, 9009/tcp
+gprofiler-ps-nginx-load-balancer   nginx:1.23.3                        "/docker-entrypoint.…"   nginx-load-balancer   4 minutes ago   Up 4 minutes   0.0.0.0:8080->80/tcp, 0.0.0.0:4433->443/tcp
+gprofiler-ps-periodic-tasks        deploy-periodic-tasks               "/bin/sh -c '/logrot…"   periodic-tasks        4 minutes ago   Up 4 minutes   
+gprofiler-ps-postgres              postgres:15.1                       "docker-entrypoint.s…"   db_postgres           4 minutes ago   Up 4 minutes   5432/tcp
+gprofiler-ps-webapp                deploy-webapp                       "./run.sh"               webapp                4 minutes ago   Up 4 minutes   80/tcp
 ```
 
-Now You can access the UI by navigating to http://localhost:8888 in your browser
-(8888 is the default port, configurable in the docker-compose.yml file).
+Now You can access the UI by navigating to https://localhost:4433 in your browser
+(4433 is the default port, configurable in the docker-compose.yml file).
+
+#### Destroy the stack
+```shell
+docker-compose --profile with-clickhouse down -v
+```
+The `-v` option deletes also the volumes that mens that all data will be truncated
 
 ### Securing Connections with SSL/TLS
 When accessing the gprofiler UI through the web,
@@ -96,14 +103,10 @@ Main nginx certificates location
 - `deploy/tls/cert.pem` - TLS certificate
 - `deploy/tls/key.pem` - TLS key
 
-_See [Self-signed certificate](#self-signed-certificate) for more details._
-
 CH REST service certificates location:
 - `deploy/tls/ch_rest_cert.pem` - TLS certificate
 - `deploy/tls/ch_rest_key.pem` - TLS key
 
-
-If you run 
 _See [Self-signed certificate](#self-signed-certificate) for more details._
 
 #### Self-signed certificate
@@ -126,8 +129,6 @@ that will run a docker installation agent with self-signed certificate
 ```shell
 docker run --name granulate-gprofiler --restart=always -d --pid=host --userns=host --privileged granulate/gprofiler:latest -cu --token="<token from api or ui>" --service-name="my-super-service" --server-host "https://host.docker.internal" --glogger-server "https://host.docker.internal" --no-verify
 ```
-
-
 
 ### Diagnostics
 If a service is restarted or stops, run the diagnostics.sh script to check service connectivity:
@@ -164,6 +165,32 @@ After setting up the cluster,
 you need to remove db_clickhouse service from the `deploy/docker-compose.yml` file
 and changing `CLICKHOUSE_HOST` in the `.env` file to the cluster address.
 
+#### Clustered clickhouse local run example
+We created some minimal configuration to run CH cluster locally in K8S for testing purposes,
+it can be used as a base for production cluster as well.
+
+##### Pre-requisites
+- `Kind` version >= 0.17.x, installable from [here](https://kind.sigs.k8s.io/docs/user/quick-start/#installation)
+
+##### Run the clickhouse cluster
+For immediate local run you can run `deploy/clickhouse_cluster/run_ch_cluster.sh` script.
+Let's go deeper to understand each step:
+- `kind create cluster --config kind.yml` - That will create a local k8s run, instead you can config a `kubectl` context to your cluster
+- `kubectl apply -f clickhouse_operator.yaml` - Install altinity clickhouse operator - it will manage clickhouse installation 
+- `kubectl apply -f zookeeper-1-node.yaml` - Dependency for the operator used to sync all replicas and shards (don't use 1 node installation in production!)
+- `kubectl apply -f clickhouse_server_deploy.yaml` - deploying the clickhouse itself 
+- `kubectl port-forward services/chi-flame-db-01-flame-db-0-0 9000:9000` - make it accessible locally to load the schema (in your production cluster you can configure a DNS for service/clickhouse)
+- `clickhouse client -u dbuser --password simplePassword --multiquery < ../../src/gprofiler_indexer/sql/create_ch_schema_cluster_mode.sql` load the schema, that will load the schema to all shards and replicas
+
+Now the clickhouse cluster is up, you can configure docker-compose service to talk with this cluster:
+
+Edit `CLICKHOUSE_HOST` parameter in `deploy/.env` file,
+for local run with kind (as above) use `host.docker.internal` as the host value
+
+Run docker compose without clickhouse:
+```shell
+docker-compose up -d --build
+```
 
 ## Managing the stack
 ### Downsampling

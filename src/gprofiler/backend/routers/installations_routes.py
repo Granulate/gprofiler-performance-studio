@@ -10,9 +10,8 @@ import yaml
 from backend.models.installation_models import FileType
 from backend.utils.download_external import get_daemon_set_template
 from backend.utils.installation_utils import get_installation_file_download
-from fastapi import APIRouter, HTTPException, Query, Security
+from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import StreamingResponse
-
 from gprofiler_dev.postgres.db_manager import DBManager
 
 logger = getLogger(__name__)
@@ -50,7 +49,5 @@ def get_daemon_set(
 
 
 @router.get("/{file_type}/file", responses={"200": {"content": {"text/plain": {}}}})
-def get_installation_file(
-        file_type: FileType, service_name: str = Query(..., alias="serviceName")
-):
+def get_installation_file(file_type: FileType, service_name: str = Query(..., alias="serviceName")):
     return get_installation_file_download(file_type, service_name)

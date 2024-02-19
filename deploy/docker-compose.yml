@@ -8,6 +8,7 @@ services:
   # ---
   db_clickhouse:
     image: clickhouse/clickhouse-server:22.8
+    profiles: ["with-clickhouse"]
     container_name: gprofiler-ps-clickhouse
     restart: always
     ulimits:
@@ -93,10 +94,13 @@ services:
       - CERT_FILE_PATH=/tls/ch_rest_cert.pem
       - KEY_FILE_PATH=/tls/ch_rest_key.pem
       - BASIC_AUTH_CREDENTIALS=${REST_USERNAME}:${REST_PASSWORD}
-    depends_on:
-      - db_clickhouse
     volumes:
       - "./tls:/tls"
+    healthcheck:
+      test: echo 'SELECT database,name from system.tables' | curl -s 'http://$CLICKHOUSE_USER:$CLICKHOUSE_PASSWORD@$CLICKHOUSE_HOST:8123/?query=' --data-binary @- | grep -q "samples"
+      interval: 10s
+      retries: 10
+      start_period: 20s
 
   # ---
   agents-logs-backend:
@@ -165,8 +169,8 @@ services:
     container_name: gprofiler-ps-nginx-load-balancer
     restart: always
     ports:
-      - "80:80"
-      - "443:443"
+      - "8080:80"
+      - "4433:443"
     volumes:
       - ./https_nginx.conf:/etc/nginx/nginx.conf
       - ./tls:/etc/nginx/tls

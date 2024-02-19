@@ -4,7 +4,7 @@
 # This software and the related documents are provided as is, with no express or implied warranties, other than those that are expressly stated in the License.
 
 from datetime import datetime
-from typing import Optional, Union
+from typing import Union
 
 from pydantic import BaseModel
 
@@ -12,7 +12,7 @@ from pydantic import BaseModel
 class AgentData(BaseModel):
     start_time: datetime
     profile: str
-    gpid: Optional[Union[str, int]]
+    gpid: Union[str, int]
 
 
 class ProfileResponse(BaseModel):

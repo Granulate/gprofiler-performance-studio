@@ -7,16 +7,16 @@ import json
 from datetime import datetime
 from logging import getLogger
 from typing import Dict, List, Optional, Union
+
 import requests
-from backend.config import QUERY_API_BASE_URL, STACKS_COUNT_DEFAULT, REST_CERTIFICATE_PATH, REST_USERNAME, REST_PASSWORD
+from backend.config import QUERY_API_BASE_URL, REST_CERTIFICATE_PATH, REST_PASSWORD, REST_USERNAME, STACKS_COUNT_DEFAULT
 from backend.models.common import ServiceName
 from backend.models.filters_models import RQLFilter
 from backend.models.flamegraph_models import FGParamsBaseModel, FGParamsModel
 from backend.utils.json_param import json_param
 from fastapi import Depends, HTTPException, Query
-from requests import Response
-
 from gprofiler_dev.postgres.db_manager import DBManager
+from requests import Response
 
 logger = getLogger(__name__)
 
@@ -83,8 +83,13 @@ def get_flamegraph_response(
 
 
 def get_flamegraph_request(db_api_params, stream):
-    response = requests.get(url=f"{QUERY_API_BASE_URL}/api/v1/flamegraph", params=db_api_params, stream=stream,
-                            verify=REST_CERTIFICATE_PATH, auth=(REST_USERNAME, REST_PASSWORD))
+    response = requests.get(
+        url=f"{QUERY_API_BASE_URL}/api/v1/flamegraph",
+        params=db_api_params,
+        stream=stream,
+        verify=REST_CERTIFICATE_PATH,
+        auth=(REST_USERNAME, REST_PASSWORD),
+    )
     if response.status_code >= 300:
         logger.error(response.text)
         # this error string is used in the frontend, please don't change it until we add error handling
@@ -120,7 +125,9 @@ def _common_fg_rest_response(response: Response, db_api_params: Dict) -> Union[L
     return data["result"]
 
 
-def get_query_response(fg_params: FGParamsBaseModel, lookup_for: str = "time", resolution=None, interval=None) -> Union[List, Dict]:
+def get_query_response(
+    fg_params: FGParamsBaseModel, lookup_for: str = "time", resolution=None, interval=None
+) -> Union[List, Dict]:
     fg_filter = fg_params.filter.json().encode() if fg_params.filter else None
     db_api_params = get_api_params(
         fg_params.service_name,
@@ -130,10 +137,15 @@ def get_query_response(fg_params: FGParamsBaseModel, lookup_for: str = "time", r
         lookup_for=lookup_for,
         resolution=resolution,
         filter=fg_filter,
-        interval=interval)
+        interval=interval,
+    )
     try:
-        response = requests.get(url=f"{QUERY_API_BASE_URL}/api/v1/query", params=db_api_params,
-                                verify=REST_CERTIFICATE_PATH, auth=(REST_USERNAME, REST_PASSWORD))
+        response = requests.get(
+            url=f"{QUERY_API_BASE_URL}/api/v1/query",
+            params=db_api_params,
+            verify=REST_CERTIFICATE_PATH,
+            auth=(REST_USERNAME, REST_PASSWORD),
+        )
     except requests.exceptions.ConnectionError:
         raise HTTPException(status_code=502, detail="Failed connect to flamedb api")
     return _common_fg_rest_response(response, db_api_params)
@@ -161,8 +173,12 @@ def get_metrics_response(
         interval=interval,
     )
     try:
-        response = requests.get(url=f"{QUERY_API_BASE_URL}/api/v1/metrics/{lookup_for}", params=db_api_params,
-                                verify=REST_CERTIFICATE_PATH, auth=(REST_USERNAME, REST_PASSWORD))
+        response = requests.get(
+            url=f"{QUERY_API_BASE_URL}/api/v1/metrics/{lookup_for}",
+            params=db_api_params,
+            verify=REST_CERTIFICATE_PATH,
+            auth=(REST_USERNAME, REST_PASSWORD),
+        )
     except requests.exceptions.ConnectionError:
         raise HTTPException(status_code=502, detail="Failed connect to flamedb api")
     return _common_fg_rest_response(response, db_api_params)
