@@ -45,6 +45,21 @@ Before using the gProfiler Performance Studio, ensure the following:
 - You'll also need to create an SQS queue and an S3 bucket.
 - You have Docker and docker-compose installed on your machine.
 
+
+#### Security
+By default, the system is required to set a basic auth username and password;
+you can generate it by running the following command:
+```shell
+# assuming that you located in the deploy directory
+htpasswd -c .htpasswd <your username>
+# the prompt will ask you to set a password
+```
+This file is required to run the stack
+
+Also, a TLS certificate is required to run the stack,
+see [Securing Connections with SSL/TLS](#securing-connections-with-ssltls) for more details.
+
+
 ### Running the stack
 To run the entire stack built from source, use the docker-compose project located in the `deploy` directory.
 
@@ -53,7 +68,8 @@ The `deploy` directory contains:
 - `.env` - The environment file where you set your AWS credentials, SQS/S3 names, and AWS region.
 - `https_nginx.conf` - Nginx configuration file used as an entrypoint load balancer.
 - `diagnostics.sh`- A script for testing connectivity between services and printing useful information.
-
+- `tls` - A directory for storing TLS certificates (see [Securing Connections with SSL/TLS](#securing-connections-with-ssltls)).
+- `.htpasswd` - A file for storing basic auth credentials (see above).
 
 To launch the stack, run the following commands in the `deploy` directory:
 ```shell
