@@ -51,7 +51,7 @@ By default, the system is required to set a basic auth username and password;
 you can generate it by running the following command:
 ```shell
 # assuming that you located in the deploy directory
-htpasswd -c .htpasswd <your username>
+htpasswd -B -C 12 -c .htpasswd <your username>
 # the prompt will ask you to set a password
 ```
 This file is required to run the stack
