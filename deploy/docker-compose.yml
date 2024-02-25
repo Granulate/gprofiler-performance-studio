@@ -173,6 +173,7 @@ services:
       - "4433:443"
     volumes:
       - ./https_nginx.conf:/etc/nginx/nginx.conf
+      - ./.htpasswd:/etc/nginx/.htpasswd
       - ./tls:/etc/nginx/tls
     depends_on:
       - agents-logs-backend

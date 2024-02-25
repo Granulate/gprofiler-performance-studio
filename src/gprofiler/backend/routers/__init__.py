@@ -17,7 +17,6 @@ from backend.routers import (
 )
 from fastapi import APIRouter
 
-# TODO in original API there is a prefixes mismatch, the agent use /api/v1, and frontend /api
 
 router = APIRouter()
 router.include_router(healthcheck_routes.router, prefix="/v1/health_check", tags=["agent"])
