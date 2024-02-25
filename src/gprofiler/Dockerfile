@@ -57,6 +57,18 @@ COPY --from=frontend_dependencies /frontend/build frontend
 COPY gprofiler/backend backend
 COPY gprofiler/nginx/logrotate.conf /etc/nginx/logrotate.conf
 
+RUN useradd -m -s /bin/bash -u 888 non_root && \
+    chown -R non_root:non_root /usr/src/app && \
+    chown -R non_root:non_root /etc/nginx && \
+    chown -R non_root:non_root /var/cache/nginx && \
+    chown -R non_root:non_root /var/log/nginx && \
+    chown -R non_root:non_root /tmp/nginx && \
+    chown -R non_root:non_root /var/run && \
+    chown -R non_root:non_root /run && \
+    chown -R non_root:non_root /var/lib/logrotate
+
+USER non_root
+
 # run logrotate
 RUN logrotate /etc/nginx/logrotate.conf
 

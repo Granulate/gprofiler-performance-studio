@@ -74,8 +74,6 @@ services:
 # for debug
 #    ports:
 #      - "8888:80"
-    volumes:
-      - "logs:${COMMON_LOGS_DIR}"
 
   # ---
   ch-rest-service:
