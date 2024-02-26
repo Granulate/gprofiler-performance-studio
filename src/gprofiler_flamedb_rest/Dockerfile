@@ -21,5 +21,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
 RUN mkdir -p /data
 
 COPY --from=build /go/src/app /usr/local/bin/app
+
+RUN useradd -m -s /bin/bash -u 888 non_root && \
+    chown -R non_root:non_root /data && \
+    chown -R non_root:non_root /usr/local/bin/app
+
+USER non_root
+
+
 EXPOSE 8080
 ENTRYPOINT ["/usr/local/bin/app"]

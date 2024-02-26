@@ -104,6 +104,7 @@ services:
 
   # ---
   agents-logs-backend:
+    user: "888:888"
     build:
       context: ../src
       dockerfile: gprofiler_logging/Dockerfile
@@ -123,6 +124,7 @@ services:
 
   # ---
   periodic-tasks:
+    user: "888:888"
     build:
       context: periodic_tasks
       dockerfile: Dockerfile

@@ -22,4 +22,10 @@ COPY gprofiler-dev gprofiler-dev
 COPY gprofiler_logging/app app
 COPY gprofiler_logging/run.sh run.sh
 
+
+RUN useradd -m -s /bin/bash -u 888 non_root && \
+    chown -R non_root:non_root /app
+
+USER non_root
+
 CMD ["./run.sh"]
