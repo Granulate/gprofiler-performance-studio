@@ -10,5 +10,5 @@ cachetools==5.2.0
 pyhumps==3.8.0
 cmp-version==3.0.0
 setproctitle==1.2.3
-fastapi[all]==0.78.0
+fastapi[all]==0.109.1
 gunicorn==20.1.0
