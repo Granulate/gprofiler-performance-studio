@@ -1,13 +1,24 @@
-{/*
- * INTEL CONFIDENTIAL
- * Copyright (C) 2023 Intel Corporation
- * This software and the related documents are Intel copyrighted materials, and your use of them is governed by the express license under which they were provided to you ("License"). Unless the License provides otherwise, you may not use, modify, copy, publish, distribute, disclose or transmit this software or the related documents without Intel's prior written permission.
- * This software and the related documents are provided as is, with no express or implied warranties, other than those that are expressly stated in the License.
-*/}
+{
+    /*
+     * Copyright (C) 2023 Intel Corporation
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *    http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+}
 
 import { Box, ListItemButton, ListItemIcon, Menu } from '@mui/material';
 import { useContext, useState } from 'react';
-import { useLocation } from "react-router-dom";
+import { useLocation } from 'react-router-dom';
 
 import Button from '@/components/common/button/Button';
 import Icon from '@/components/common/icon/Icon';
@@ -26,17 +37,39 @@ const VIEW_TO_ICON_NAME = {
     [PROFILES_VIEWS.service]: ICONS_NAMES.ServiceView,
 };
 
-const getUrlWithOtherViewMode = (viewMode) => {
+const ToolTipWrappingThing = ({ viewMode, onChooseView }) => {
     const { search, pathname } = useLocation();
     const safeViewMode = encodeURIComponent(viewMode);
+
     let baseUrl = `${window.location.protocol}//${window.location.host}${pathname}`;
     const url = new URL(baseUrl);
+
     if (search) {
         // Remove the leading '?' from the search string before appending
         url.search = search.substring(1);
     }
+
     url.searchParams.set('view', safeViewMode);
-    return url.toString();
+
+    return (
+        <ViewModeTooltip viewMode={viewMode}>
+            <ListItemButton
+                component='a'
+                onClick={(e) => onChooseView(e, viewMode)}
+                sx={{ margin: 0, px: 3, py: 3, '&:hover': { backgroundColor: 'hoverGrey.main' } }}
+                href={url.toString()}>
+                <ListItemIcon sx={{ minWidth: '10px !important' }}>
+                    <Icon
+                        name={VIEW_TO_ICON_NAME[viewMode]}
+                        color={viewMode !== viewMode ? COLORS.WHITE : COLORS.SECONDARY_ORANGE}
+                        vertical
+                        width={22}
+                        height={14}
+                    />
+                </ListItemIcon>
+            </ListItemButton>
+        </ViewModeTooltip>
+    );
 };
 
 const ViewModeSwitch = () => {
@@ -130,28 +163,9 @@ const ViewModeSwitch = () => {
                     vertical: 'top',
                     horizontal: mainClicked ? 'left' : 'right',
                 }}>
-                {Object.keys(PROFILES_VIEWS).map((view) => {
-                    const url = getUrlWithOtherViewMode(view)
-                    return (
-                        <ViewModeTooltip viewMode={view} key={view}>
-                            <ListItemButton
-                                component='a'
-                                onClick={(e) => onChooseView(e, view)}
-                                sx={{ margin: 0, px: 3, py: 3, '&:hover': { backgroundColor: 'hoverGrey.main' } }}
-                                href={url}>
-                                <ListItemIcon sx={{ minWidth: '10px !important' }}>
-                                    <Icon
-                                        name={VIEW_TO_ICON_NAME[view]}
-                                        color={view !== viewMode ? COLORS.WHITE : COLORS.SECONDARY_ORANGE}
-                                        vertical
-                                        width={22}
-                                        height={14}
-                                    />
-                                </ListItemIcon>
-                            </ListItemButton>
-                        </ViewModeTooltip>
-                    );
-                })}
+                {Object.keys(PROFILES_VIEWS).map((view) => (
+                    <ToolTipWrappingThing key={view} viewMode={view} onChooseView={onChooseView} />
+                ))}
             </Menu>
         </>
     );
