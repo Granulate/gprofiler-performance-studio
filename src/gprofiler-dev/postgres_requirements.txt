@@ -15,4 +15,4 @@
 #
 
 psycopg2-binary==2.9.9
-pydantic[email]==1.8.2
+pydantic[email]==1.10.14
