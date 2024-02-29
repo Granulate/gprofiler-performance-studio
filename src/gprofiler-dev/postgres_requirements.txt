@@ -4,4 +4,4 @@
 # This software and the related documents are provided as is, with no express or implied warranties, other than those that are expressly stated in the License.
 
 psycopg2-binary==2.9.9
-pydantic[email]==1.8.2
+pydantic[email]==1.10.14

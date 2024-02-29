@@ -2,7 +2,7 @@
 
 ## Running the backend locally
 ### Pre-requisites
-- Python 3.10 or higher is installed on your machine.
+- Python 3.12 or higher is installed on your machine.
 - Running `deploy/docker-compose.yml` without the webapp service - that way you will be covered with all the dependencies, like databases and other services.
 
 Now we need to install the dependencies:
