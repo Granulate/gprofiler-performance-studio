@@ -10,7 +10,7 @@ https://granulate.io/continuous-profiling/
 
 # Continuous Profiler
 
-The evolution of gProfiler, Continuous Profiler combines multiple sampling profilers to produce a unified visualization of what a CPU is spending time on. Easy-to-navigate flame graphs pinpoint performance regressions, such as garbage collection, deadlocks and others to help smooth deployments.
+The evolution of Continuous Profiler, Continuous Profiler combines multiple sampling profilers to produce a unified visualization of what a CPU is spending time on. Easy-to-navigate flame graphs pinpoint performance regressions, such as garbage collection, deadlocks and others to help smooth deployments.
 
 The profiler is compatible with Intel Granulate’s continuous optimization services and can be deployed cluster-wide within minutes, supporting a range of programming languages without requiring code changes. 
 
