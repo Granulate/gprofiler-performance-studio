@@ -1,9 +1,26 @@
-# gProfiler Performance studio 
+# About
+Continuous production profiling, made easy.
 
-This project offers a backend and user interface for the [gProfiler agent](https://github.com/Granulate/gprofiler),
+An open-source, continuous profiler for production – across any environment, at any scale.
+
+Developed by Intel® Granulate™ and contributed to the open source community, Continuous Profiler is a solution that combines multiple profilers into one view as a flame graph. 
+This unified view offers developers, performance engineers and DevOps a continuous and autonomous way to identify runtime inefficiencies.
+
+https://granulate.io/continuous-profiling/
+
+# Continuous Profiler
+
+The evolution of Continuous Profiler, Continuous Profiler combines multiple sampling profilers to produce a unified visualization of what a CPU is spending time on. Easy-to-navigate flame graphs pinpoint performance regressions, such as garbage collection, deadlocks and others to help smooth deployments.
+
+The profiler is compatible with Intel Granulate’s continuous optimization services and can be deployed cluster-wide within minutes, supporting a range of programming languages without requiring code changes. 
+
+Continuous Profiler is SOC2-certified and held to Intel's high security standards, ensuring reliability and trust in its deployment.
+
+
+This project offers a backend and user interface for the [Continuous Profiler agent](https://github.com/Granulate/gprofiler),
 featuring advanced flamegraph analysis tools.
 
-For more detailed information, please refer to our [documentation](https://docs.gprofiler.io/).
+
 
 ## Table of Contents
 
@@ -15,11 +32,11 @@ For more detailed information, please refer to our [documentation](https://docs.
 
 ## System Overview
 ![system_overview.png](system_overview.png)
-The gProfiler Performance Studio is structured around several key microservices,
+The Continuous Profiler is structured around several key microservices,
 each playing a vital role in its functionality:
 
 - `src/gprofiler/backend` - This is the web application backend. It exposes all APIs to the frontend or API users and is responsible for collecting data from agents.
-- `src/gprofiler/frontend` - The User Interface of gProfiler, facilitating interaction with the backend.
+- `src/gprofiler/frontend` - The User Interface of Continuous Profiler, facilitating interaction with the backend.
 - `src/gprofiler_indexer` - This service is tasked with collecting raw profiling data from S3 storage and indexing it for ClickHouse, a database management system.
 - `src/gprofiler_flamedb_rest` - Handles communication with ClickHouse for the purpose of constructing flamegraphs.
 - `src/gprofiler_logging` - Dedicated to collecting logs from agents, ensuring a comprehensive logging system.
@@ -27,7 +44,7 @@ each playing a vital role in its functionality:
 This architecture allows for efficient handling and analysis of profiling data, providing users with an intuitive and powerful tool for performance analysis.
 
 ### External Dependencies: AWS Services
-The gProfiler Performance Studio incorporates specific AWS services as essential components.
+The Continuous Profiler incorporates specific AWS services as essential components.
 These dependencies are:
 
 - Amazon S3 (Simple Storage Service): Used extensively for storing profiling data.
@@ -40,7 +57,7 @@ like Minio for S3 and RabbitMQ for SQS.
 ## Usage
 
 ### Pre-requisites
-Before using the gProfiler Performance Studio, ensure the following:
+Before using the Continuous Profiler, ensure the following:
 - You have an AWS account and configure your credentials, as the project utilizes AWS SQS and S3.
 - You'll also need to create an SQS queue and an S3 bucket.
 - You have Docker and docker-compose installed on your machine.
@@ -105,8 +122,8 @@ docker-compose --profile with-clickhouse down -v
 The `-v` option deletes also the volumes that mens that all data will be truncated
 
 ### Securing Connections with SSL/TLS
-When accessing the gprofiler UI through the web,
-it is important to set up HTTPS to ensure the communication between gprofiler and the end user is encrypted.
+When accessing the Continuous Profiler UI through the web,
+it is important to set up HTTPS to ensure the communication between Continuous Profiler and the end user is encrypted.
 As well as communication between webapp and ch-rest-service expected to be encrypted.
 
 Besides the security aspect, this is also required
@@ -210,7 +227,7 @@ docker-compose up -d --build
 
 ## Managing the stack
 ### Downsampling
-If your service becomes overloaded with gProfiler agent requests and struggles to handle the load,
+If your service becomes overloaded with Continuous Profiler agent requests and struggles to handle the load,
 you may need to activate downsampling. 
 
 This can be done at the service level by updating the relevant column in Postgres.

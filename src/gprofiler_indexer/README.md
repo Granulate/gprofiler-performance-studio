@@ -1,5 +1,5 @@
 # Intro
-gProfiler indexer is a data ingestion service, which ingests callstacks
+Continuous Profiler indexer is a data ingestion service, which ingests callstacks
 to the FlameDB.
 
 # Build notes
