@@ -1,5 +1,5 @@
 # Intro
-gProfiler flamedb rest is a service
+Continuous Profiler flamedb rest is a service
 that handles communication with ClickHouse to build flamegraphs.
 
 
