@@ -8,7 +8,7 @@ This unified view offers developers, performance engineers and DevOps a continuo
 
 https://granulate.io/continuous-profiling/
 
-# gProfiler Performance studio
+# Continuous Profiler
 
 The evolution of gProfiler, Continuous Profiler combines multiple sampling profilers to produce a unified visualization of what a CPU is spending time on. Easy-to-navigate flame graphs pinpoint performance regressions, such as garbage collection, deadlocks and others to help smooth deployments.
 
@@ -32,7 +32,7 @@ featuring advanced flamegraph analysis tools.
 
 ## System Overview
 ![system_overview.png](system_overview.png)
-The Continuous Profiler Performance Studio is structured around several key microservices,
+The Continuous Profiler is structured around several key microservices,
 each playing a vital role in its functionality:
 
 - `src/gprofiler/backend` - This is the web application backend. It exposes all APIs to the frontend or API users and is responsible for collecting data from agents.
@@ -44,7 +44,7 @@ each playing a vital role in its functionality:
 This architecture allows for efficient handling and analysis of profiling data, providing users with an intuitive and powerful tool for performance analysis.
 
 ### External Dependencies: AWS Services
-The Continuous Profiler Performance Studio incorporates specific AWS services as essential components.
+The Continuous Profiler incorporates specific AWS services as essential components.
 These dependencies are:
 
 - Amazon S3 (Simple Storage Service): Used extensively for storing profiling data.
@@ -57,7 +57,7 @@ like Minio for S3 and RabbitMQ for SQS.
 ## Usage
 
 ### Pre-requisites
-Before using the Continuous Profiler Performance Studio, ensure the following:
+Before using the Continuous Profiler, ensure the following:
 - You have an AWS account and configure your credentials, as the project utilizes AWS SQS and S3.
 - You'll also need to create an SQS queue and an S3 bucket.
 - You have Docker and docker-compose installed on your machine.
