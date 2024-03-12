@@ -1,5 +1,5 @@
 # About
-Continuous production profiling, made easy.
+Continuous production profiling, made easy (for the cloud version, which is also free, use [Intel Continuous Profiler](https://profiler.granulate.io)).
 
 An open-source, continuous profiler for production – across any environment, at any scale.
 
