@@ -14,7 +14,7 @@ RUN yarn --cwd /frontend/ install
 COPY gprofiler/frontend /frontend
 RUN yarn build
 
-FROM python:3.12-bullseye
+FROM python:3.12.3-bullseye
 
 WORKDIR /usr/src/app
 EXPOSE 80
